@@ -4,594 +4,125 @@
     "name": "Red Chippy (Big)",
     "cost": 25,
     "price": 40,
-    "stock": 4,
     "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
+    "consumptionType": "short",
+    "batches": [
+      { "quantity": 4, "expirationDate": "2025-08-29" },
+      { "quantity": 5, "expirationDate": "2026-10-14" }
+    ]
+  },
+  {
     "barcode": 2,
     "name": "Green Ligo Sardines",
     "cost": 20,
     "price": 30,
-    "stock": 2,
     "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
+    "consumptionType": "short",
+    "batches": [
+      { "quantity": 2, "expirationDate": "2025-09-20" },
+      { "quantity": 3, "expirationDate": "2025-10-15" }
+    ]
+  },
+  {
     "barcode": 3,
     "name": "All Night Modess (12 pads)",
     "cost": 20,
     "price": 28,
-    "stock": 3,
     "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
+    "consumptionType": "long",
+    "batches": [
+      { "quantity": 3, "expirationDate": "2025-09-03" },
+      { "quantity": 2, "expirationDate": "2026-01-01" }
+    ]
+  },
+  {
     "barcode": 4,
     "name": "Del Gentle Care (12ml)",
     "cost": 6,
     "price": 8,
-    "stock": 8,
     "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
+    "consumptionType": "short",
+    "batches": [
+      { "quantity": 8, "expirationDate": "2025-09-06" },
+      { "quantity": 4, "expirationDate": "2025-12-10" }
+    ]
+  },
+  {
     "barcode": 5,
     "name": "Regular Coke (1.75ml)",
     "cost": 58,
     "price": 75,
-    "stock": 3,
     "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
+    "consumptionType": "short",
+    "batches": [
+      { "quantity": 3, "expirationDate": "2025-10-24" },
+      { "quantity": 2, "expirationDate": "2026-02-14" }
+    ]
+  },
+  {
     "barcode": 6,
     "name": "Gardenia Classic (600g)",
     "cost": 78,
     "price": 80,
-    "stock": 4,
     "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
+    "consumptionType": "short",
+    "batches": [
+      { "quantity": 4, "expirationDate": "2025-12-14" }
+    ]
+  },
+  {
     "barcode": 7,
     "name": "Colgate (90 ml)",
     "cost": 45,
     "price": 58,
-    "stock": 1,
     "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
+    "consumptionType": "long",
+    "batches": [
+      { "quantity": 1, "expirationDate": "2025-11-10" }
+    ]
+  },
+  {
     "barcode": 8,
     "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
     "cost": 105,
     "price": 120,
-    "stock": 0,
     "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
+    "consumptionType": "noExpiry",
+    "batches": [
+      { "quantity": 10, "expirationDate": null }
+    ]
+  },
+  {
     "barcode": 9,
     "name": "Extension Wire",
     "cost": 105,
     "price": 120,
-    "stock": 2,
     "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
+    "consumptionType": "noExpiry",
+    "batches": [
+      { "quantity": 2, "expirationDate": null }
+    ]
+  },
+  {
     "barcode": 10,
     "name": "Flashlight",
     "cost": 105,
     "price": 120,
-    "stock": 3,
     "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
+    "consumptionType": "noExpiry",
+    "batches": [
+      { "quantity": 3, "expirationDate": null }
+    ]
+  },
+  {
     "barcode": 11,
     "name": "Eveready Battery AA",
     "cost": 105,
     "price": 120,
-    "stock": 50,
     "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
-  }, {
-    "barcode": 12,
-    "name": "Red Chippy (Big)",
-    "cost": 25,
-    "price": 40,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
-    "barcode": 13,
-    "name": "Green Ligo Sardines",
-    "cost": 20,
-    "price": 30,
-    "stock": 2,
-    "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
-    "barcode": 14,
-    "name": "All Night Modess (12 pads)",
-    "cost": 20,
-    "price": 28,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
-    "barcode": 15,
-    "name": "Del Gentle Care (12ml)",
-    "cost": 6,
-    "price": 8,
-    "stock": 8,
-    "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
-    "barcode": 16,
-    "name": "Regular Coke (1.75ml)",
-    "cost": 58,
-    "price": 75,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
-    "barcode": 17,
-    "name": "Gardenia Classic (600g)",
-    "cost": 78,
-    "price": 80,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
-    "barcode": 18,
-    "name": "Colgate (90 ml)",
-    "cost": 45,
-    "price": 58,
-    "stock": 1,
-    "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
-    "barcode": 19,
-    "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
-    "cost": 105,
-    "price": 120,
-    "stock": 0,
-    "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 20,
-    "name": "Extension Wire",
-    "cost": 105,
-    "price": 120,
-    "stock": 2,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 21,
-    "name": "Flashlight",
-    "cost": 105,
-    "price": 120,
-    "stock": 3,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 22,
-    "name": "Eveready Battery AA",
-    "cost": 105,
-    "price": 120,
-    "stock": 50,
-    "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
-  }, {
-    "barcode": 23,
-    "name": "Red Chippy (Big)",
-    "cost": 25,
-    "price": 40,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
-    "barcode": 24,
-    "name": "Green Ligo Sardines",
-    "cost": 20,
-    "price": 30,
-    "stock": 2,
-    "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
-    "barcode": 25,
-    "name": "All Night Modess (12 pads)",
-    "cost": 20,
-    "price": 28,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
-    "barcode": 26,
-    "name": "Del Gentle Care (12ml)",
-    "cost": 6,
-    "price": 8,
-    "stock": 8,
-    "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
-    "barcode": 27,
-    "name": "Regular Coke (1.75ml)",
-    "cost": 58,
-    "price": 75,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
-    "barcode": 28,
-    "name": "Gardenia Classic (600g)",
-    "cost": 78,
-    "price": 80,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
-    "barcode": 29,
-    "name": "Colgate (90 ml)",
-    "cost": 45,
-    "price": 58,
-    "stock": 1,
-    "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
-    "barcode": 30,
-    "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
-    "cost": 105,
-    "price": 120,
-    "stock": 0,
-    "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 31,
-    "name": "Extension Wire",
-    "cost": 105,
-    "price": 120,
-    "stock": 2,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 32,
-    "name": "Flashlight",
-    "cost": 105,
-    "price": 120,
-    "stock": 3,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 33,
-    "name": "Eveready Battery AA",
-    "cost": 105,
-    "price": 120,
-    "stock": 50,
-    "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
-  }, {
-    "barcode": 34,
-    "name": "Red Chippy (Big)",
-    "cost": 25,
-    "price": 40,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
-    "barcode": 35,
-    "name": "Green Ligo Sardines",
-    "cost": 20,
-    "price": 30,
-    "stock": 2,
-    "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
-    "barcode": 36,
-    "name": "All Night Modess (12 pads)",
-    "cost": 20,
-    "price": 28,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
-    "barcode": 37,
-    "name": "Del Gentle Care (12ml)",
-    "cost": 6,
-    "price": 8,
-    "stock": 8,
-    "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
-    "barcode": 38,
-    "name": "Regular Coke (1.75ml)",
-    "cost": 58,
-    "price": 75,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
-    "barcode": 39,
-    "name": "Gardenia Classic (600g)",
-    "cost": 78,
-    "price": 80,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
-    "barcode": 40,
-    "name": "Colgate (90 ml)",
-    "cost": 45,
-    "price": 58,
-    "stock": 1,
-    "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
-    "barcode": 41,
-    "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
-    "cost": 105,
-    "price": 120,
-    "stock": 0,
-    "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 42,
-    "name": "Extension Wire",
-    "cost": 105,
-    "price": 120,
-    "stock": 2,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 43,
-    "name": "Flashlight",
-    "cost": 105,
-    "price": 120,
-    "stock": 3,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 44,
-    "name": "Eveready Battery AA",
-    "cost": 105,
-    "price": 120,
-    "stock": 50,
-    "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
-  }, {
-    "barcode": 45,
-    "name": "Red Chippy (Big)",
-    "cost": 25,
-    "price": 40,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
-    "barcode": 46,
-    "name": "Green Ligo Sardines",
-    "cost": 20,
-    "price": 30,
-    "stock": 2,
-    "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
-    "barcode": 47,
-    "name": "All Night Modess (12 pads)",
-    "cost": 20,
-    "price": 28,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
-    "barcode": 48,
-    "name": "Del Gentle Care (12ml)",
-    "cost": 6,
-    "price": 8,
-    "stock": 8,
-    "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
-    "barcode": 49,
-    "name": "Regular Coke (1.75ml)",
-    "cost": 58,
-    "price": 75,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
-    "barcode": 50,
-    "name": "Gardenia Classic (600g)",
-    "cost": 78,
-    "price": 80,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
-    "barcode": 51,
-    "name": "Colgate (90 ml)",
-    "cost": 45,
-    "price": 58,
-    "stock": 1,
-    "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
-    "barcode": 52,
-    "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
-    "cost": 105,
-    "price": 120,
-    "stock": 0,
-    "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 53,
-    "name": "Extension Wire",
-    "cost": 105,
-    "price": 120,
-    "stock": 2,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 54,
-    "name": "Flashlight",
-    "cost": 105,
-    "price": 120,
-    "stock": 3,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 55,
-    "name": "Eveready Battery AA",
-    "cost": 105,
-    "price": 120,
-    "stock": 50,
-    "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
-  }, {
-    "barcode": 56,
-    "name": "Red Chippy (Big)",
-    "cost": 25,
-    "price": 40,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-08-29",
-    "consumptionType": "short"
-  }, {
-    "barcode": 57,
-    "name": "Green Ligo Sardines",
-    "cost": 20,
-    "price": 30,
-    "stock": 2,
-    "category": "groceries",
-    "expirationDate": "2025-09-20",
-    "consumptionType": "short"
-  }, {
-    "barcode": 58,
-    "name": "All Night Modess (12 pads)",
-    "cost": 20,
-    "price": 28,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-09-03",
-    "consumptionType": "long"
-  }, {
-    "barcode": 59,
-    "name": "Del Gentle Care (12ml)",
-    "cost": 6,
-    "price": 8,
-    "stock": 8,
-    "category": "groceries",
-    "expirationDate": "2025-09-06",
-    "consumptionType": "short"
-  }, {
-    "barcode": 60,
-    "name": "Regular Coke (1.75ml)",
-    "cost": 58,
-    "price": 75,
-    "stock": 3,
-    "category": "groceries",
-    "expirationDate": "2025-10-24",
-    "consumptionType": "short"
-  }, {
-    "barcode": 61,
-    "name": "Gardenia Classic (600g)",
-    "cost": 78,
-    "price": 80,
-    "stock": 4,
-    "category": "groceries",
-    "expirationDate": "2025-12-14",
-    "consumptionType": "short"
-  }, {
-    "barcode": 62,
-    "name": "Colgate (90 ml)",
-    "cost": 45,
-    "price": 58,
-    "stock": 1,
-    "category": "groceries",
-    "expirationDate": "2025-11-10",
-    "consumptionType": "long"
-  }, {
-    "barcode": 63,
-    "name": "Blue Cherub Baby Wipes (80 + 10 pcs)",
-    "cost": 105,
-    "price": 120,
-    "stock": 0,
-    "category": "groceries",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 64,
-    "name": "Extension Wire",
-    "cost": 105,
-    "price": 120,
-    "stock": 2,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 65,
-    "name": "Flashlight",
-    "cost": 105,
-    "price": 120,
-    "stock": 3,
-    "category": "electronics",
-    "expirationDate": "",
-    "consumptionType": "noExpiry"
-  }, {
-    "barcode": 66,
-    "name": "Eveready Battery AA",
-    "cost": 105,
-    "price": 120,
-    "stock": 50,
-    "category": "electronics",
-    "expirationDate": "2025-11-06",
-    "consumptionType": "isExpiring"
+    "consumptionType": "isExpiring",
+    "batches": [
+      { "quantity": 50, "expirationDate": "2025-11-06" }
+    ]
   }
 ]

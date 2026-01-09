@@ -2,7 +2,9 @@ import { appState, domElements } from "../../globals.js";
 
 async function showOrder(orderId, isCompleteButton) {
   try {
-    const { data: { order } } = await axios.get(`/api/v1/orders/${orderId}`);
+    const { data: { order } } = await axios.get(`/api/v1/orders/${orderId}`, {
+      withCredentials: true,
+    });
 
     appState.currentPreviewOrderItems = order.items;
 
@@ -19,8 +21,13 @@ async function showOrder(orderId, isCompleteButton) {
         <div class="create-order-header-title">
           Order List
         </div>
-        <div class="create-order-header-indicator ${statusClass}">
-          ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+        <div class="flex">
+          <div class="create-order-header-indicator ${statusClass}">
+            ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+          </div>
+          <div class="js-close-view close-view">
+            X
+          </div>
         </div>
       </div>
       <div class="create-order-details">
@@ -82,6 +89,7 @@ async function showOrder(orderId, isCompleteButton) {
     if (viewBtnForOrder) {
       viewBtnForOrder.classList.add('viewing');
     }
+
   } catch (error) {
     console.log(error);
 
@@ -135,6 +143,13 @@ export function viewOrder() {
     
     showOrder(orderId, isCompleteButton);
   });
+
+  domElements.viewOrderDOM.addEventListener('click', (e) => {
+    const closeBtn = e.target.closest('.js-close-view');
+    if (!closeBtn) return;
+
+    closeViewOrder();
+  });
 }
 
 function turnOffPreviousButton() {
@@ -163,7 +178,83 @@ export function partialCloseViewingOrder() {
 
 export function fetchOrderItems(items, completeButton) {
   return items.map(item => {
-    const isEditing = item.productId === appState.previewEditingItemId && item.itemType === appState.previewEditingItemType;
+    if (item.itemType === 'replacement' && item.replacements) {
+      return item.replacements.map(batch => {
+        const isEditing = batch.batchId === appState.editingOrderedItem.batchId && item.productId === appState.editingOrderedItem.productId;
+
+        return `
+          <div class="${completeButton ? "complete-order-product-details-row" : "view-order-product-details-row"}">
+            <div class="order-qty">
+              ${isEditing
+                ? `<input type="number" class="js-quantity-input quantity-input" value="${batch.quantity}" autofocus>` 
+                : `${batch.quantity}${item.itemType === 'replacement' ? '(r)' : ''}`
+              }
+            </div>
+            <div class="order-name">
+              ${item.productName}
+            </div>
+            <div class="order-unit-price">
+              ${item.unitPrice}
+            </div>
+            ${completeButton
+              ? (item.consumptionType !== 'noExpiry'
+                ? (isEditing
+                    ? `<input type="date" class="js-expiration-date-input item-expiration-date no-picker" value="${batch.expirationDate ? new Date(batch.expirationDate).toISOString().split('T')[0] : ''}">`
+                    : `<div class="order-expiration-date-text">
+                        ${batch.expirationDate
+                            ? new Date(batch.expirationDate).toLocaleDateString('en-US', {
+                                month: '2-digit',
+                                day: '2-digit',
+                                year: 'numeric'
+                              })
+                            : 'mm/dd/yyyy'
+                        }
+                      </div>`
+                  )
+                : '<div></div>'
+              )
+              : `<div class="order-amount">
+                  ${batch.quantity * item.unitPrice}
+                </div>`
+            }
+            ${completeButton
+              ? `<div class="order-action">
+                    ${isEditing
+                      ? `
+                        <div class="js-save-item-order edit-action" 
+                          data-product-id="${item.productId}" 
+                          data-item-type="${item.itemType}"
+                          data-batch-id="${batch.batchId}"
+                        >
+                          Save
+                        </div>
+                      `
+                      : `
+                        <div class="js-edit-item-order edit-action" 
+                          data-product-id="${item.productId}" 
+                          data-item-type="${item.itemType}"
+                          data-batch-id="${batch.batchId}"
+                        >
+                          Edit
+                        </div>
+                      `
+                    }
+                    <div class="js-delete-item-order delete-action"
+                      data-product-id="${item.productId}" 
+                      data-item-type="${item.itemType}"
+                      data-batch-id="${batch.batchId}"
+                    >
+                      Delete
+                    </div>
+                </div>`
+              : ''
+            }
+          </div>
+        `;
+      }).join(''); 
+    }
+
+    const isEditing = item.productId === appState.editingOrderedItem.productId && item.itemType === appState.editingOrderedItem.itemType;
     return `
       <div class="${completeButton ? "complete-order-product-details-row" : "view-order-product-details-row"}">
         <div class="order-qty">
@@ -179,7 +270,8 @@ export function fetchOrderItems(items, completeButton) {
           ${item.unitPrice}
         </div>
         ${completeButton 
-          ? (isEditing
+          ? (item.consumptionType !== 'noExpiry'
+            ? (isEditing
               ? `<input type="date" class="js-expiration-date-input item-expiration-date no-picker" value="${item.expirationDate ? new Date(item.expirationDate).toISOString().split('T')[0] : ''}">`
               : `<div class="order-expiration-date-text">
                   ${item.expirationDate
@@ -192,25 +284,36 @@ export function fetchOrderItems(items, completeButton) {
                   }
                 </div>`
             )
+            : '<div></div>'
+          )
           : `<div class="order-amount">
-              ${item.totalPrice}
+              ${item.quantity * item.unitPrice}
             </div>`
         }
         ${completeButton
           ? `<div class="order-action">
                 ${isEditing
                   ? `
-                    <div class="js-save-item-order edit-action" data-product-id="${item.productId}" data-item-type="${item.itemType}"  >
+                    <div class="js-save-item-order edit-action" 
+                      data-product-id="${item.productId}" 
+                      data-item-type="${item.itemType}"
+                    >
                       Save
                     </div>
                   `
                   : `
-                    <div class="js-edit-item-order edit-action" data-product-id="${item.productId}" data-item-type="${item.itemType}">
+                    <div class="js-edit-item-order edit-action" 
+                      data-product-id="${item.productId}" 
+                      data-item-type="${item.itemType}"
+                    >
                       Edit
                     </div>
                   `
                 }
-                <div class="js-delete-item-order delete-action" data-product-id="${item.productId}" data-item-type="${item.itemType}">
+                <div class="js-delete-item-order delete-action"
+                  data-product-id="${item.productId}" 
+                  data-item-type="${item.itemType}"
+                >
                   Delete
                 </div>
             </div>`
@@ -219,4 +322,4 @@ export function fetchOrderItems(items, completeButton) {
       </div>
     `;
   }).join('');
-}
+} 

@@ -23,7 +23,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     // customError.path = 'barcode';
   }
   // return res.status(customError.statusCode).json({err});
-  // console.log({err});
+  console.log({err});
   return res.status(customError.statusCode).json({ msg: customError.msg, path: customError.path });
 }
 

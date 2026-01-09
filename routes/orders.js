@@ -8,7 +8,8 @@ const {
   finalizeOrder,
   deleteOrder,
   addOrReplaceItem,
-  editItem,
+  editCreatingOrderItem,
+  editOrderedItem,
   deleteItem,
 } = require('../controller/orders');
 
@@ -24,8 +25,13 @@ router.route('/:orderId')
 router.route('/:orderId/items')
   .post(addOrReplaceItem);
 
+router.route('/:orderId/create-order/items/:productId')
+  .patch(editCreatingOrderItem);
+
+router.route('/:orderId/ordered/items/:productId')
+  .patch(editOrderedItem);
+
 router.route('/:orderId/items/:productId')
-  .patch(editItem)
   .delete(deleteItem);
 
 // router.route('/:id/items/replace')

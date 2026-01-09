@@ -1,5 +1,25 @@
 const mongoose = require('mongoose');
-const thresholds = require('../config/threshold');
+// const thresholds = require('../config/threshold');
+
+const BatchesSchema = new mongoose.Schema({
+  quantity: {
+    type: Number,
+    default: 0,
+  },
+  expirationDate: {
+    type: Date,
+    default: null,
+  },
+}, {
+  toJSON: { 
+    virtuals: true,
+    transform: (doc, ret) => {
+      delete ret._id;
+      delete ret.__v
+      return ret;
+    }
+  },
+});
 
 const ProductSchema = new mongoose.Schema({
   name: {
@@ -34,20 +54,21 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     enum: ['long', 'short', 'isExpiring', 'noExpiry'],
   },
+  batches: [BatchesSchema],
+  // expirationDate: {
+  //   type: Date,
+  //   default: null,
+  // },
   stock: {
     type: Number,
     default: 0,
   },
-  expirationDate: {
-    type: Date,
-    default: null,
-  },
-  stockStatus: {
-    type: String,
-  },
-  expirationStatus: {
-    type: String,
-  },
+  // stockStatus: {
+  //   type: String,
+  // },
+  // expirationStatus: {
+  //   type: String,
+  // },
 }, {
   toJSON: { 
     virtuals: true,
@@ -60,26 +81,47 @@ const ProductSchema = new mongoose.Schema({
 });
 
 ProductSchema.pre('save', function () {
-  const stockLimit = thresholds[this.category].stock;
-  if (this.stock === 0) this.stockStatus = 'out of stock';
-  else if (this.stock <= stockLimit) this.stockStatus = 'low stock';
-  else this.stockStatus = 'high stock';
-
-  const category = thresholds[this.category];
-  const consumptionDays = category?.expiration?.[this.consumptionType]
-
-  if (!this.expirationDate || this.consumptionType === 'noExpiry') {
-    this.expirationStatus = 'no expiration';
-    return;
+  if (this.batches && this.batches.length > 0) {
+    this.stock = this.batches.reduce((sum, batch) => sum + batch.quantity, 0);
+  } else {
+    this.stock = 0;
   }
 
-  const daysLeft = Math.ceil((this.expirationDate - new Date()) / (1000 * 60 * 60 * 24));
+  // const stockLimit = thresholds[this.category].stock;
+  // if (this.stock === 0) this.stockStatus = 'out of stock';
+  // else if (this.stock <= stockLimit) this.stockStatus = 'low stock';
+  // else this.stockStatus = 'high stock';
 
-  if (daysLeft <= 0) this.expirationStatus = 'expired';
-  else if (daysLeft <= consumptionDays) this.expirationStatus = 'expiring soon';
-  else if (daysLeft > consumptionDays) this.expirationStatus = 'fresh';
-  else this.expirationStatus = '';
+
+  // if (this.consumptionType === 'noExpiry' || !this.batches || this.batches.length === 0) {
+  //   this.expirationStatus = 'no expiration';
+  //   return;
+  // } else {
+  //   const category = thresholds[this.category];
+  //   const consumptionDays = category?.expiration?.[this.consumptionType];
+
+  //   const soonestExp = this.batches
+  //     .filter(batch => batch.expirationDate)
+  //     .map(batch => batch.expirationDate)
+  //     .sort((a, b) => a - b)[0];
+
+  //   if (!soonestExp) {
+  //     this.expirationStatus = 'no expiration';
+  //     return;
+  //   } 
+
+  //   const daysLeft = Math.ceil((soonestExp - new Date()) / (1000 * 60 * 60 * 24));
+
+  //   if (daysLeft <= 0) this.expirationStatus = 'expired';
+  //   else if (daysLeft <= consumptionDays) this.expirationStatus = 'expiring soon';
+  //   else if (daysLeft > consumptionDays) this.expirationStatus = 'fresh';
+  //   else this.expirationStatus = '';
+  // }
 });
+
+// ProductSchema.post('save', function () {
+//   const stockCount = this.stock 
+// })
 
 
 module.exports = mongoose.model('Product', ProductSchema);

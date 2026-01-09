@@ -18,7 +18,7 @@ export async function addToCartModal() {
           </div>
           <div class="modal-body-cart">
             <div class="search-container">
-              <div class="inventory-search-bar">
+              <div class="cart-search-bar">
                 <span class="js-search-button material-symbols-outlined search-icon">
                   search
                 </span>
@@ -42,7 +42,9 @@ export async function addToCartModal() {
 
     async function fetchSearchProducts(query = '') {
       try {
-        const { data: { products } } = await axios.get(`/api/v1/products?name=${query}&limit=3`);
+        const { data: { products } } = await axios.get(`/api/v1/products?name=${query}&limit=3`, {
+          withCredentials: true
+        });
 
         const searchProducts = products.map(product => {
           return `
@@ -55,7 +57,7 @@ export async function addToCartModal() {
                 ${product.stock}
               </div>
               <div class="product-details add-to-cart-stock">
-                <span class="js-add-to-cart-product-button material-symbols-outlined add-product-icon inventory-add-to-cart-button" data-product-id="${product.id}">
+                <span class="js-add-to-cart-product-button material-symbols-outlined add-product-icon inventory-add-to-cart-button" data-product-id="${product._id}">
                   add
                 </span>
               </div>
@@ -93,10 +95,12 @@ export async function addToCartModal() {
           existingProduct.quantity += 1;
         } else {
           try { 
-            const { data: { product } } = await axios.get(`/api/v1/products/${productId}`);
+            const { data: { product } } = await axios.get(`/api/v1/products/${productId}`, {
+              withCredentials: true
+            });
 
             activeCart.push({ 
-            productId: product.id,
+            productId: product._id,
             productName: product.name,
             expirationDate: product.expirationDate,
             unitCost: product.cost,

@@ -3,7 +3,6 @@ import { domElements } from "../../globals.js";
 import { fetchOrders } from "./orders.js";
 
 export function deleteOrder() {
-  // const orderContainerDOM = document.querySelector('.js-order-list-container');
 
   domElements.orderContainerDOM.addEventListener('click', async (e) => {
     const deleteButton = e.target.closest('.js-delete-order-button');
@@ -11,7 +10,9 @@ export function deleteOrder() {
 
     try {
       const orderId = deleteButton.dataset.orderId;
-      const { data } = await axios.delete(`/api/v1/orders/${orderId}`);
+      const { data } = await axios.delete(`/api/v1/orders/${orderId}`, {
+        withCredentials: true,
+      });
 
       const activeNav = document.querySelector('.js-nav-bar-button.on-this-nav');
       if (activeNav) {

@@ -23,32 +23,43 @@ export const showProducts = async (nameValue = '', sortValue = '', filterValue =
       outOfStockCount, 
       nearExpirationCount, 
       expiredCount, 
-      limitCount,
       totalItemsCount,
       totalItemsFetch,
       totalPagesCount,
     } } = await axios.get(`/api/v1/products`, { 
-      params: { name: nameValue, sort: sortValue, filter: filterValue, limit: limitValue, page: pageValue}
+      params: { name: nameValue, sort: sortValue, filter: filterValue, limit: limitValue, page: pageValue},
+      withCredentials: true
     });
 
     appState.totalPagesCount = totalPagesCount;
     
     const allProducts = products.map(product => {
-      const { id:productId, name, barcode, cost, price, stock, expirationDate, stockStatus, expirationStatus } = product;
+      const { 
+        _id: productId, 
+        name, 
+        barcode, 
+        cost, 
+        price, 
+        validStocks, 
+        expiredStocks, 
+        expirationDate, 
+        stockStatus, 
+        expirationStatus, 
+        batches } = product;
 
       const dateOnly = expirationDate
       ? expirationDate.split('T')[0]
       : '';
 
-      let stockClass = stockStatus === 'out of stock'
+      let stockClass = stockStatus === 'out-of-stock'
       ? 'product-out-of-stock-container'
-      : stockStatus === 'low stock'
+      : stockStatus === 'low-stock'
       ? 'product-low-stock-container'
       : 'product-high-stock-container'
 
       let expirationClass = expirationStatus === 'expired'
       ? 'product-expired-container'
-      : expirationStatus === 'expiring soon'
+      : expirationStatus === 'expiring-soon'
       ? 'product-expiring-container'
       : expirationStatus === 'fresh'
       ? 'product-good-container'
@@ -74,20 +85,29 @@ export const showProducts = async (nameValue = '', sortValue = '', filterValue =
         </div>
 
         <div class="product-details ${stockClass} product-details-label"> 
-          <span class="vanishing"> &#9679;  </span> ${stock} <span class="vanishing"> left </span>
+          <span class="vanishing"> &#9679;  </span> ${validStocks}
         </div>
 
-        <div class="product-details ${expirationClass} product-details-label">
-          ${dateOnly}
-        </div>
+          ${expiredStocks 
+            ? `<div class="product-details product-out-of-stock-container product-details-label">
+                <span class="vanishing"> &#9679;  </span> ${expiredStocks}
+              </div>` 
+            : '<div class="product-details product-details-label"></div>'
+          }
+        
 
         ${productActionButton(productId)}
+      </div>
+
+      <div class="js-batch-container batch-container hidden" data-product-id="${productId}">
       </div>
     `;
     }).join(' ');
 
+    const currentPageItemsCount = products.length;
+    
     const resultStart = (appState.currentPage - 1) * appState.currentLimit + 1; 
-    const resultEnd = resultStart + limitCount - 1;
+    const resultEnd = resultStart + currentPageItemsCount - 1;  // Fixed!
 
     document.querySelector('.js-pagination-result').innerHTML = `
       Result ${resultStart}-${resultEnd} of <span class="js-total-items-fetch"></span>
@@ -194,11 +214,24 @@ function renderPagination(totalPagesCount) {
 function productActionButton(productId) {
   if (!appState.creatingOrder) {
     return `
-      <div class="product-details">
-        <div class="js-edit-action edit-action" data-product-id="${productId}">Edit</div>
-        <div class="js-delete-action delete-action" data-product-id="${productId}">Delete</div>
+      <div class="product-details inventory-product-action-buttons">
+        <span class="material-symbols-outlined js-add-batch-action inventory-add-icon" data-product-id="${productId}">
+          add
+        </span>
+        <span class="material-symbols-outlined js-edit-action inventory-edit-icon" data-product-id="${productId}">
+          edit
+        </span>
+        <span class="material-symbols-outlined js-delete-action inventory-delete-icon" data-product-id="${productId}">
+          delete
+        </span>
+        <span class="material-symbols-outlined js-dropdown-action inventory-dropdown-icon" data-product-id="${productId}">
+          keyboard_arrow_down
+        </span>
       </div>
     `;
+
+    // <div class="js-edit-action edit-action" data-product-id="${productId}">Edit</div>
+    //     <div class="js-delete-action delete-action" data-product-id="${productId}">Delete</div>
   } else {
     return `
     <div class="create-order-action">
@@ -207,14 +240,101 @@ function productActionButton(productId) {
           add
         </span>
       </div>
-      <div class="js-replace-item-button product-details inventory-add-to-cart-button" data-product-id="${productId}">
-        <span class="material-symbols-outlined add-product-icon">
-          compare_arrows
-        </span>
-      </div>
+      <span class="material-symbols-outlined product-details js-dropdown-action inventory-dropdown-icon" data-product-id="${productId}">
+        keyboard_arrow_down
+      </span>
     </div> 
     `;
+
+    // <div class="js-replace-item-button product-details inventory-add-to-cart-button" data-product-id="${productId}">
+    //     <span class="material-symbols-outlined add-product-icon">
+    //       compare_arrows
+    //     </span>
+    //   </div>
   }
+}
+
+export function showBatch() {
+  domElements.productListContainerDOM.addEventListener('click', async (e) => {
+    const dropdownEl = e.target.closest('.js-dropdown-action'); 
+    
+    if (dropdownEl) {
+      const productId = dropdownEl.dataset.productId;
+      const batchContainer = document.querySelector(`.js-batch-container[data-product-id="${productId}"]`);
+
+      const isHidden = batchContainer.classList.contains('hidden');
+
+      if (isHidden) {
+        const currentFilter = appState.currentFilter || '';
+        batchContainer.classList.remove('hidden');
+
+        try {
+          const { data: { batches } } = await axios.get(`/api/v1/products/${productId}/batches`, {
+            params: {
+              filter: currentFilter
+            },
+            withCredentials: true
+          });
+
+          batchContainer.innerHTML = batches.map(batch => {
+            const { _id: batchId, quantity, expirationDate, expirationStatus, stockStatus } = batch;
+
+            let expirationClass = expirationStatus === 'expired'
+              ? 'product-expired-container'
+              : expirationStatus === 'expiring-soon'
+              ? 'product-expiring-container'
+              : expirationStatus === 'fresh'
+              ? 'product-good-container'
+              : ''
+
+            let stockClass = expirationStatus === 'expired'
+              ? 'product-out-of-stock-container'
+              : stockStatus === 'low-stock'
+              ? 'product-low-stock-container'
+              : 'product-high-stock-container'
+
+            return `
+              <div class="batch-row">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div class="product-details ${stockClass}"> 
+                  <span class="vanishing"> &#9679; </span> ${quantity || 0}
+                </div>
+                <div class="product-details ${expirationClass}"> 
+                  ${expirationDate ? expirationDate.split('T')[0] : 'No Expiration'}
+                </div>
+                <div class="js-batch-add-action">
+                  ${!appState.creatingOrder
+                    ? `<div class="product-details inventory-product-action-buttons">
+                        <span class="material-symbols-outlined js-batch-edit-action inventory-edit-icon" data-product-id="${productId}" data-batch-id="${batchId}">
+                          edit
+                        </span>
+                        <span class="material-symbols-outlined js-batch-delete-action inventory-delete-icon" data-product-id="${productId}" data-batch-id="${batchId}">
+                          delete
+                        </span>
+                      </div>`
+                    : `<div class="js-replace-item-button product-details inventory-add-to-cart-button" data-product-id="${productId}" data-batch-id="${batchId}">
+                        <span class="material-symbols-outlined add-product-icon">
+                          compare_arrows
+                        </span>
+                      </div>`
+                  }
+                </div>
+              </div>
+            `;
+          }).join('');
+        } catch (error) {
+          console.log('Error fetching batches:', error);
+          batchContainer.classList.add('hidden');
+        }
+      } else {
+        batchContainer.classList.add('hidden');
+      }
+    }
+  });
 }
 
 

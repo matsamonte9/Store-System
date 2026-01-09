@@ -9,11 +9,13 @@ const OrderItemSchema = new mongoose.Schema({
   productName: String,
   quantity: {
     type: Number,
-    required: true,
     min: 1,
+    required: function() {
+      return this.itemType === 'adding';
+    }
   }, 
   unitPrice: Number,
-  totalPrice: Number,
+  consumptionType: String,
   expirationDate: {
     type: Date,
     default: null,
@@ -22,6 +24,27 @@ const OrderItemSchema = new mongoose.Schema({
     type: String,
     enum: ['adding', 'replacement'],
     default: 'adding',
+  },
+  replacements: {
+    type: [{
+      batchId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product.batches",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+      expirationDate: {
+        type: Date,
+        default: null
+      }
+    }],
+    required: function() {
+      return this.itemType === 'replacement';
+    }
   },
 }, { _id: false });
 

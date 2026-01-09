@@ -1,5 +1,34 @@
 const Joi = require('joi');
 
+const batchSchema = Joi.object({
+  quantity: Joi
+    .number()
+    .min(1)
+    .required()
+    .label('Quantity'),
+  expirationDate: Joi
+    .date()
+    .empty(["", null])
+    .default(null)
+    .label('Expiration Date')
+}).messages({
+  'number.base': '{#label} must be Number',
+  'date.base': '{#label} must be Date',
+  'number.min': '{#label} must be greater than or equal to {#limit}',
+  'number.max': '{#label} must be less than or equal to {#limit}',
+  'any.required': '{#label} is required',
+  'any.custom': '{{#message}}',
+});
+
+const batchesSchema = Joi.object({
+  batches: Joi
+    .array()
+    .items(batchSchema),
+}).messages({
+  'array.base': '{#label} must be Array',
+  'any.custom': '{{#message}}',
+});
+
 const productSchema = Joi.object({
   name: Joi
     .string()
@@ -58,29 +87,28 @@ const productSchema = Joi.object({
 
       return value;
     }),
-  stock: Joi.number().min(0).required().label('Stock').custom((value, helpers) => {
-    const obj = helpers.state.ancestors[0];
-
-    if (obj.expirationDate && value < 1) {
-      return helpers.error('any.custom', { message: 'If Expiration Date is provided, Stock must at least be 1'});
-    }
-
-    return value;
-  }),
-  expirationDate: Joi.date().empty(["", null]).default(null).label('Expiration Date').when('consumptionType', {
-    is: Joi.valid('short', 'long', 'isExpiring'),
-    then: Joi.required().messages({
-      'any.required': 'Expiration Date is required, Consumption Type is provided'
-    }),
-    otherwise: Joi.optional()
-  }).custom((value, helpers) => {
-    const obj = helpers.state.ancestors[0];
-    if (value && obj.consumptionType === 'noExpiry') {
-      return helpers.error('any.custom', { message: "Consumption Type can’t be No Expiration, Expiration Date is provided" });
-    }
-
-    return value;
-  }),
+    batches: Joi.array().items(Joi.object({
+      quantity: Joi
+        .number()
+        .min(1)
+        .empty(["", null])
+        .label('Quantity'),
+      expirationDate: Joi
+        .date()
+        .empty(["", null])
+        .default(null)
+        .label('Expiration Date')
+      }).default([])
+      .label('Batches')
+      .messages({
+        'number.base': '{#label} must be Number',
+        'date.base': '{#label} must be Date',
+        'number.min': '{#label} must be greater than or equal to {#limit}',
+        'number.max': '{#label} must be less than or equal to {#limit}',
+        'any.required': '{#label} is required',
+        'any.custom': '{{#message}}',
+    })),
+  stock: Joi.forbidden(),
   stockStatus: Joi.forbidden(),
   expirationStatus: Joi.forbidden(),
 }).messages({
@@ -96,6 +124,8 @@ const productSchema = Joi.object({
   'any.custom': '{{#message}}',
 });
 
-const updateProductSchema = productSchema.fork(['name', 'barcode', 'cost', 'price', 'category', 'stock'], field => field.optional());
+const updateProductSchema = productSchema
+  .fork(['name', 'barcode', 'cost', 'price', 'category', 'consumptionType'], field => field.optional())
+  // .fork(['batches', 'stock', 'stockStatus', 'expirationStatus'], field => field.forbidden());
 
-module.exports = { productSchema, updateProductSchema };
+module.exports = { productSchema, updateProductSchema, batchesSchema };

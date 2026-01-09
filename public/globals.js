@@ -2,18 +2,28 @@ export const appState = {
   // Avoid Event Listener Stacking
   // dropdownsInitialized: false,
 
+  // General
+
+  activeMode: null,
+
+  // Login
+  currentUser: null,
+
   // Inventory
   creatingOrder: false,
-  editingItemId: null,
-  editingItemType: null,
+  editingCreatingOrderItem: {
+    productId: null,
+    itemType: null,
+    batchId: null,
+  },
   currentOrderItems: [],
   currentOrderId: null,
 
   // Inventory Filter
   currentName : '',
-  currentSort : '',
+  currentSort : 'name',
   currentFilter : '',
-  currentLimit : 5,
+  currentLimit : 10,
   currentPage : 1,
   totalPagesCount: 1,
 
@@ -21,12 +31,20 @@ export const appState = {
   currentPreviewOrderId: null,
   currentPreviewOrderItems: [],
   currentPreviewOrderAction: null,
-  previewEditingItemId: null,
-  previewEditingItemType: null,
+  editingOrderedItem: {
+    productId: null,
+    itemType: null,
+    batchId: null,
+  },
+
+  // User Management
+  userManagementCurrentFilter: '',
 
   // Cart 
   cartEditingProductId: null,
   pausedCart: false,
+  stockWarnings: [],
+  cartToken: null,
 }
 
 export const domElements = {
@@ -55,6 +73,11 @@ export const domElements = {
   viewOrderDOM: document.querySelector('.js-view-order'),
   navBarDOM: null,
   orderContainerDOM: null,
+
+  // User Management
+
+  userManagementActionDOM: null,
+  userListContainerDOM: null,
 
   // Cart 
 

@@ -1,12 +1,6 @@
 import { appState, domElements } from "../../globals.js";
 import { showProducts } from "./products.js";
 
-// let currentName = '';
-// let currentSort = '';
-// let currentFilter = '';
-// let currentLimit = 5;
-// let currentPage = 1;
-
 let searchEnterHandler = null;
 let searchButtonHandler = null;
 let inventoryClickHandler = null;
@@ -37,22 +31,6 @@ function searchInput() {
 
   searchInputDOM.addEventListener('keydown', searchEnterHandler);
   searchButton.addEventListener('click', searchButtonHandler);
-
-  // searchInputDOM.addEventListener('keydown', (e) => {
-  //   if (e.key === 'Enter') {
-  //     searchListenerCount++
-  //     console.log(`Search Enter Clicked: ${searchListenerCount}`);    
-  //     appState.currentName = e.target.value.trim();
-  //     showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
-  //   }
-  // });
-
-  // searchButton.addEventListener('click', () => {
-  //   searchListenerCount++
-  //   console.log(`Search Button Clicked: ${searchListenerCount}`);
-  //   appState.currentName = searchInputDOM.value.trim();
-  //   showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
-  // });
 }
 
 function handleDropdowns() {
@@ -61,6 +39,8 @@ function handleDropdowns() {
   const sortDOM = document.querySelector('.js-sort-button');
   const sortModalDOM = document.querySelector('.js-sort-modal');
   const limitModalDOM = document.querySelector('.js-limit-modal');
+  const sortFilterDOM = document.querySelector('.js-sort-filter-button');
+  const sortFilterModalDOM = document.querySelector('.js-sort-filter-modal');
 
   if (inventoryClickHandler) {
     domElements.inventoryProductContainerDOM.removeEventListener('click', inventoryClickHandler);
@@ -93,6 +73,10 @@ function handleDropdowns() {
 
     if (e.target.closest('.js-pagination')) {
       handlePagination(e);
+    }
+
+    if (e.target.closest('.js-sort-filter-button')) {
+      toggleSortFilterModal(e, sortFilterDOM, sortFilterModalDOM)
     }
   }
 
@@ -129,7 +113,7 @@ function toggleSortModal(sortDOM, sortModalDOM, filterDOM, filterModalDOM) {
       Expiration (Near-Far)
     </div>
     <div class="option option-divider" data-sort="-expirationDate">
-      Expiration (Near-Far)
+      Expiration (Far-Near)
     </div>
 `;
   const isHidden = sortModalDOM.classList.contains('hidden');
@@ -205,9 +189,6 @@ function selectFilterOption(e, filterDOM, filterModalDOM) {
 function toggleLimitModal(limitModalDOM) {
 
   const html = `
-    <div class="option option-divider" data-limit="5">
-      5
-    </div>
     <div class="option option-divider" data-limit="10">
       10
     </div>
@@ -250,4 +231,134 @@ function handlePagination(e) {
   }
 
   showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
+}
+
+function toggleSortFilterModal(e, sortFilterDOM, sortFilterModalDOM) {
+  const html = `
+    <div class="sort-filter-modal-header">
+      <div class="js-sort-tab on-this-sort-filter-modal-header">Sort</div>
+      <div class="js-filter-tab">Filter</div>
+    </div>
+
+    <div class="js-sort-filter-body sort-filter-modal-body"></div>
+  `;
+
+  const isHidden = sortFilterModalDOM.classList.contains('hidden');
+
+  if (isHidden) {
+    sortFilterModalDOM.innerHTML = html;
+    sortFilterModalDOM.classList.remove('hidden');
+    sortFilterDOM.classList.add('current-dropdown');
+
+    renderSortBody(sortFilterModalDOM);
+    attachSortFilterListeners(sortFilterModalDOM);
+  } else {
+    sortFilterModalDOM.classList.add('hidden');
+    sortFilterDOM.classList.remove('current-dropdown');
+  }
+}
+
+function renderSortBody(modal) {
+  const body = modal.querySelector('.js-sort-filter-body');
+
+  body.innerHTML = `
+    <label><input type="radio" name="sort" value="name"> Name (A–Z)</label>
+    <label><input type="radio" name="sort" value="-name"> Name (Z–A)</label>
+    <label><input type="radio" name="sort" value="cost"> Cost (Low–High)</label>
+    <label><input type="radio" name="sort" value="-cost"> Cost (High–Low)</label>
+    <label><input type="radio" name="sort" value="stock"> Stock (Low–High)</label>
+    <label><input type="radio" name="sort" value="-stock"> Stock (High–Low)</label>
+  `;
+
+  syncSortState(modal);
+}
+
+function renderFilterBody(modal) {
+  const body = modal.querySelector('.js-sort-filter-body');
+
+  body.innerHTML = `
+    <label>
+      <input type="radio" name="filter" value=""> 
+      Show All
+    </label>
+    <label>
+      <input type="radio" name="filter" value="out-of-stock"> 
+      Out of Stock
+    </label>
+    <label>
+      <input type="radio" name="filter" value="low-stock"> 
+      Low Stock
+    </label>
+    <label>
+      <input type="radio" name="filter" value="high-stock">
+      High Stock
+    </label>
+    <label>
+      <input type="radio" name="filter" value="expired">
+      Expired
+    </label>
+    <label>
+      <input type="radio" name="filter" value="expiring-soon">
+      Expiring Soon
+    </label>
+    <label>
+      <input type="radio" name="filter" value="fresh">
+      Fresh
+    </label>
+  `;
+
+  syncFilterState(modal);
+}
+
+function attachSortFilterListeners(modal) {
+  const sortTab = modal.querySelector('.js-sort-tab');
+  const filterTab = modal.querySelector('.js-filter-tab');
+
+  sortTab.addEventListener('click', () => {
+    sortTab.classList.add('on-this-sort-filter-modal-header');
+    filterTab.classList.remove('on-this-sort-filter-modal-header');
+    renderSortBody(modal);
+  });
+
+  filterTab.addEventListener('click', () => {
+    filterTab.classList.add('on-this-sort-filter-modal-header');
+    sortTab.classList.remove('on-this-sort-filter-modal-header');
+    renderFilterBody(modal);
+  });
+
+  modal.addEventListener('change', handleSortFilterChange);
+}
+
+function handleSortFilterChange(e) {
+  if (e.target.name === 'sort') {
+    appState.currentSort = e.target.value;
+  }
+
+  if (e.target.name === 'filter') {
+    appState.currentFilter = e.target.value;
+  }
+
+  appState.currentPage = 1;
+
+  showProducts(
+    appState.currentName,
+    appState.currentSort,
+    appState.currentFilter,
+    appState.currentLimit,
+    appState.currentPage
+  );
+}
+
+function syncSortState(modal) {
+  const radio = modal.querySelector(
+    `input[name="sort"][value="${appState.currentSort}"]`
+  );
+  if (radio) radio.checked = true;
+}
+
+function syncFilterState(modal) {
+  const radio = modal.querySelector(
+    `input[name="filter"][value="${appState.currentFilter || ''}"]`
+  );
+  if (radio) radio.checked = true;
 }

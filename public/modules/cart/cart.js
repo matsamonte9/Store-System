@@ -15,15 +15,10 @@ export function fetchProductsFromCart() {
 
   domElements.cartProductListContainer.innerHTML = activeCart.map(product => {
 
-    let expirationClass = product.expirationStatus === 'expired'
-      ? 'product-expired-container'
-      : product.expirationStatus === 'expiring soon'
-      ? 'product-expiring-container'
-      : product.expirationStatus === 'fresh'
-      ? 'product-good-container'
-      : ''
-
     const isEditing = appState.cartEditingProductId === product.productId;
+
+    const stockWarning = appState.stockWarnings?.find(w => w.productId.toString() === product.productId);
+
     
     return `
       <div class="cart-row-list" data-product-id="${product.productId}">
@@ -31,8 +26,17 @@ export function fetchProductsFromCart() {
         <div class="product-details">
           ${product.productName}
         </div>
-        <div class="product-details ${expirationClass}">
-          ${product.expirationDate ? new Date(product.expirationDate).toISOString().split('T')[0] : ''}
+        <div class="product-details">
+          ${stockWarning ? `
+            <div class="warning-icon-container">
+              <span class="material-symbols-outlined warning-icon-cart" style="color: #f44336">
+                warning
+              </span>
+              <div class="tooltip">
+                ${stockWarning.error}
+              </div>
+            </div>
+          ` : ``}
         </div>
         <div class="product-details">
           ₱${product.unitCost}.00

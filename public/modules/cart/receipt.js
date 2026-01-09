@@ -7,6 +7,8 @@ export function fetchProductsToReceipt() {
     receiptProductContainer.innerHTML = `
       <div class="empty-row-list-receipt"> No Item In The Cart</div>
     `;
+
+    document.querySelector('.js-receipt-total').textContent = '₱0.00';
     return;
   }
 

@@ -1,7 +1,16 @@
 import { appState, domElements } from "../../globals.js";
 import { fetchOrderItems } from "./view-order.js";
 
+let isItemsActionOrdersInitialized = false;
+let saveRequestCount = 0; // Track save requests
+
 export function itemsActionOrders() {
+  if (isItemsActionOrdersInitialized) {
+    return;
+  }
+
+  isItemsActionOrdersInitialized = true;
+
   domElements.viewOrderDOM.addEventListener('click', async (e) => {
     const orderId = appState.currentPreviewOrderId;
 
@@ -14,56 +23,90 @@ export function itemsActionOrders() {
     if (editItemButton) {
       const productId = editItemButton.dataset.productId;
       const itemType = editItemButton.dataset.itemType;
+      const batchId = editItemButton.dataset.batchId || null;
 
-      appState.previewEditingItemId = productId;
-      appState.previewEditingItemType = itemType;
+      appState.editingOrderedItem.productId = productId;
+      appState.editingOrderedItem.itemType = itemType;
+      appState.editingOrderedItem.batchId = batchId;
 
       itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
 
-      const quantityInput = itemsContainer.querySelector('.js-quantity-input');
-      const expirationDateInput = itemsContainer.querySelector('.js-expiration-date-input');
+      const row = itemsContainer.querySelector(
+        `.complete-order-product-details-row [data-product-id="${productId}"][data-item-type="${itemType}"]${batchId ? `[data-batch-id="${batchId}"]` : ''}`
+      ).closest('.complete-order-product-details-row');
 
-      quantityInput.addEventListener('keydown', async (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          expirationDateInput.focus();
-        }
+  const quantityInput = row.querySelector('.js-quantity-input');
+  const expirationDateInput = row.querySelector('.js-expiration-date-input');
+
+  const saveChanges = async () => {
+    try {
+      const { data: { order } } = await axios.patch(`/api/v1/orders/${appState.currentPreviewOrderId}/ordered/items/${productId}`, {
+        quantity: quantityInput.value,
+        expirationDate: expirationDateInput ? expirationDateInput.value || null : null,
+      }, {
+        params: { itemType, batchId },
+        withCredentials: true,
       });
 
-      expirationDateInput.addEventListener('keydown', async (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
+      appState.editingOrderedItem.productId = null;
+      appState.editingOrderedItem.itemType = null;
+      appState.editingOrderedItem.batchId = null;
+      appState.currentPreviewOrderItems = order.items;
+      itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-          try {
-            const { data: { order } } = await axios.patch(`/api/v1/orders/${orderId}/items/${productId}?itemType=${itemType}`, {
-              quantity: quantityInput.value,
-              expirationDate: expirationDateInput.value ? new Date(expirationDateInput.value) : null,
-            });
+  quantityInput.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (expirationDateInput) {
+        expirationDateInput.focus();
+      } else {
+        await saveChanges();
+      }
+    }
+  });
 
-            appState.previewEditingItemId = null;
-            appState.previewEditingItemType = null;
-            appState.currentPreviewOrderItems = order.items;
-            itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      });
+  if (expirationDateInput) {
+    expirationDateInput.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        await saveChanges();
+      }
+    });
+  }
+
 
     } else if (saveItemButton) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const row = saveItemButton.closest('.complete-order-product-details-row');
       const quantityInput = row.querySelector('.js-quantity-input');
       const expirationDateInput = row.querySelector('.js-expiration-date-input');
+      const expirationDateValue = expirationDateInput ? expirationDateInput.value || null : null;
       const productId = saveItemButton.dataset.productId;
       const itemType = saveItemButton.dataset.itemType;
+      const batchId = saveItemButton.dataset.batchId || null;
 
       try {
-        const { data: { order } } = await axios.patch(`/api/v1/orders/${orderId}/items/${productId}?itemType=${itemType}`, {
+        const { data: { order } } = await axios.patch(`/api/v1/orders/${orderId}/ordered/items/${productId}`, 
+        {
           quantity: quantityInput.value,
-          expirationDate: expirationDateInput.value ? new Date(expirationDateInput.value) : null,
-        });
-        appState.previewEditingItemId = null;
-        appState.previewEditingItemType = null;
+          expirationDate: expirationDateValue,
+        },
+        {
+          params: {
+            itemType,
+            batchId,
+          },
+          withCredentials: true,
+        }
+      );
+        appState.editingOrderedItem.productId = null;
+        appState.editingOrderedItem.itemType = null;
+        appState.editingOrderedItem.batchId = null;
         appState.currentPreviewOrderItems = order.items;
         itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
       } catch (error) {
@@ -72,11 +115,32 @@ export function itemsActionOrders() {
     } else if (deleteItemButton) {
       const productId = deleteItemButton.dataset.productId;
       const itemType = deleteItemButton.dataset.itemType;
+      const batchId = deleteItemButton.dataset.batchId || undefined;
 
-      const { data: { order, msg } } = await axios.delete(`/api/v1/orders/${orderId}/items/${productId}?itemType=${itemType}`);
-      appState.currentPreviewOrderItems = order.items;
-      itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
-      console.log(msg);
+      const params = {
+        itemType
+      };
+      
+      if (batchId) {
+        params.batchId = batchId;
+      }
+
+      try {
+        const { data: { order, msg } } = await axios.delete(`/api/v1/orders/${orderId}/items/${productId}`, 
+          {
+            params: params,
+            withCredentials: true,
+          }
+        );
+        appState.editingOrderedItem.productId = null;
+        appState.editingOrderedItem.itemType = null;
+        appState.editingOrderedItem.batchId = null;
+        appState.currentPreviewOrderItems = order.items;
+        itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
+        console.log(msg);
+      } catch (error) {
+        console.log('Delete error:', error);
+      }
     } else {
       return;
     }

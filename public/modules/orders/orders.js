@@ -23,7 +23,9 @@ export async function fetchOrders(status, buttonEl) {
   const ordersContainerDOM = document.querySelector('.js-order-list-container');
 
   try {
-    const { data } = await axios.get(`/api/v1/orders?status=${status}`);
+    const { data } = await axios.get(`/api/v1/orders?status=${status}`, {
+      withCredentials: true,
+    });
     const orders = data.orders;
 
     if (!buttonEl.classList.contains('on-this-nav')) {
@@ -68,7 +70,10 @@ export async function fetchOrders(status, buttonEl) {
       
       const replacementCount = order.items
         .filter(item => item.itemType === "replacement")
-        .reduce((sum, item) => sum + item.quantity, 0);
+        .reduce((sum, item) => {
+          const total = item.replacements?.reduce((rSum, r) => rSum + (r.quantity || 0), 0) || 0;
+          return sum + total;
+        }, 0);
 
       return `
         <div class="order-card">

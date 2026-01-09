@@ -6,7 +6,7 @@
 
       <title>Dashboard</title>
 
-      <link rel="stylesheet" href="./styles.css">
+      <link rel="stylesheet" href="./styles/styles.css">
 
       <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 
@@ -17,8 +17,10 @@
 
     </head>
     <body>
+      <input type="text" id="global-barcode-input" style="position:absolute; left:-9999px;" autofocus>
+      
       <div class="js-body-container body-container">      
-        <nav class="sidebar">
+        <nav class="sidebar hidden">
           <div class="sidebar-link-container">
             <a class="js-sidebar-dashboard sidebar-link">
               <span class="material-icons icons">dashboard</span>
@@ -40,7 +42,7 @@
                 Orders
               </div>
             </a>
-            <a class="js-sidebar-settings sidebar-link">
+            <a class="js-sidebar-user-management sidebar-link">
               <span class="material-icons icons">
                 manage_accounts
               </span>
@@ -57,7 +59,7 @@
                 Check Price
               </div>
             </a>
-            <a class="js-sidebar-cart sidebar-link on-this-page">
+            <a class="js-sidebar-cart sidebar-link">
               <span class="material-symbols-rounded icons">shopping_cart</span>
               <div class="sidebar-link-title">
                 Cart
@@ -66,7 +68,7 @@
           </div>
 
           <div class="logout-container">
-            <a class="sidebar-link">
+            <a class="js-sidebar-logout sidebar-link">
               <span class="material-symbols-outlined icons">logout</span>
               <div class="sidebar-link-title">
                 Logout
@@ -76,7 +78,7 @@
         </nav>
 
         <main class="main-content">
-          
+
         </main>
 
         <section class="js-view-order view-order hidden">

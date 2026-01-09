@@ -24,6 +24,9 @@ export function pauseCart() {
       appState.pausedCart = false;
       localStorage.setItem('activeCart', JSON.stringify(pauseCart));
       localStorage.setItem('pauseCart', '[]');
+
+      appState.stockWarnings = [];
+
       fetchProductsFromCart();
       fetchProductsToReceipt();
       pauseButton.classList.replace('resume-cart', 'add-to-cart-button');
@@ -45,6 +48,10 @@ export function pauseCart() {
     appState.pausedCart = true;
     localStorage.setItem('pauseCart', JSON.stringify(activeCart));
     localStorage.setItem('activeCart', '[]');
+
+    appState.stockWarnings = [];
+    appState.cartToken = null;
+
     fetchProductsFromCart();
     fetchProductsToReceipt();
     pauseButton.classList.replace('add-to-cart-button', 'resume-cart');

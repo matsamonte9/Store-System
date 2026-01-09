@@ -2,7 +2,7 @@ import { appState, domElements } from "../../globals.js";
 import { setUpDropdowns } from "./dropdown.js";
 import { setUpModals } from "./modals.js";
 import { setUpOrderCreation } from "./order-creation.js";
-import { showProducts } from "./products.js";
+import { showProducts, showBatch } from "./products.js";
 
 export function initInventoryPage() {
   domElements.inventoryProductContainerDOM = document.querySelector('.js-inventory-product-list');
@@ -24,7 +24,8 @@ export function initInventoryPage() {
     appState.currentLimit,
     appState.currentPage
   );
+  showBatch();
   setUpDropdowns();
   setUpModals();
   setUpOrderCreation();
-} 
+}
