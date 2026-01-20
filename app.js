@@ -43,8 +43,8 @@ app.use(errorHandlerMiddleware);
 
 // const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Server is alive!');
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'login.html'));
 });
 
 let isConnected = false;
