@@ -40,18 +40,23 @@ app.use('/api/v1/cart', authenticateUser, authorizedPermission('admin', 'cashier
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const port = process.env.PORT || 3000;
+// const port = process.env.PORT || 3000;
 
-const start = async () => {
-  try {
-    await connectDB(process.env.MONGO_URI);
-    // app.listen(port, '0.0.0.0', console.log(`Server Listening on Port: ${port}`));
-    app.get('/', (req, res) => {
+app.get('/', (req, res) => {
       res.send('Server is alive!');
     });
-  } catch (error) {
-    console.log(error);
-  }
-}
 
-start();
+    connectDB(process.env.MONGO_URI)
+  .then(() => console.log('Connected to DB'))
+  .catch(err => console.log('DB connection error:', err));
+
+// const start = async () => {
+//   try {
+//     await connectDB(process.env.MONGO_URI);
+//     // app.listen(port, '0.0.0.0', console.log(`Server Listening on Port: ${port}`));
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// start();
