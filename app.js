@@ -43,8 +43,8 @@ app.use(errorHandlerMiddleware);
 
 // const port = process.env.PORT || 3000;
 
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'public', 'login.html'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 let isConnected = false;
