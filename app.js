@@ -50,12 +50,20 @@ app.get('*', (req, res) => {
 let isConnected = false;
 const connect = async () => {
   if (!isConnected) {
-    await connectDB(process.env.MONGO_URI);
-    console.log('Connected to DB');
-    isConnected = true;
+    if (!process.env.MONGO_URI) {
+      console.error("MONGO_URI is missing!");
+      return;
+    }
+    try {
+      await connectDB(process.env.MONGO_URI);
+      console.log('Connected to DB');
+      isConnected = true;
+    } catch (err) {
+      console.error('DB connection error:', err);
+    }
   }
 };
-connect().catch(err => console.log('DB connection error:', err));
+connect();
 
 // Export for Vercel
 module.exports = app;
