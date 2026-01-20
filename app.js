@@ -10,6 +10,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 
 const app = express();
+const serverless = require('serverless-http');
 
 // router
 const authRouter = require('./routes/auth');
@@ -40,15 +41,33 @@ app.use('/api/v1/cart', authenticateUser, authorizedPermission('admin', 'cashier
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const port = process.env.PORT || 3000;
+// const port = process.env.PORT || 3000;
 
-const start = async () => {
-  try {
+app.get('/', (req, res) => {
+  res.send('Server is alive!');
+});
+
+let isConnected = false;
+const connect = async () => {
+  if (!isConnected) {
     await connectDB(process.env.MONGO_URI);
-    app.listen(port, '0.0.0.0', console.log(`Server Listening on Port: ${port}`));
-  } catch (error) {
-    console.log(error);
+    console.log('Connected to DB');
+    isConnected = true;
   }
-}
+};
+connect().catch(err => console.log('DB connection error:', err));
 
-start();
+// Export for Vercel
+module.exports = app;
+module.exports.handler = serverless(app);
+
+// const start = async () => {
+//   try {
+//     await connectDB(process.env.MONGO_URI);
+//     // app.listen(port, '0.0.0.0', console.log(`Server Listening on Port: ${port}`));
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+// start();
