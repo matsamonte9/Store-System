@@ -38,9 +38,6 @@ app.use('/api/v1/orders', authenticateUser, authorizedPermission('admin', 'inven
 app.use('/api/v1/user-management', authenticateUser, authorizedPermission('admin'), userManagementRouter);
 app.use('/api/v1/cart', authenticateUser, authorizedPermission('admin', 'cashier'), cartRouter);
 
-// const port = process.env.PORT || 3000;
-
-// Remove the app.get('*', ...) and add this instead:
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -52,31 +49,16 @@ let isConnected = false;
 const connect = async () => {
   if (!isConnected) {
     if (!process.env.MONGO_URI) {
-      console.error("MONGO_URI is missing!");
       return;
     }
     try {
       await connectDB(process.env.MONGO_URI);
-      console.log('Connected to DB');
       isConnected = true;
     } catch (err) {
-      console.error('DB connection error:', err);
     }
   }
 };
 connect();
 
-// Export for Vercel
 module.exports = app;
 module.exports.handler = serverless(app);
-
-// const start = async () => {
-//   try {
-//     await connectDB(process.env.MONGO_URI);
-//     // app.listen(port, '0.0.0.0', console.log(`Server Listening on Port: ${port}`));
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
-// start();
