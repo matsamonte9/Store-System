@@ -38,15 +38,15 @@ app.use('/api/v1/orders', authenticateUser, authorizedPermission('admin', 'inven
 app.use('/api/v1/user-management', authenticateUser, authorizedPermission('admin'), userManagementRouter);
 app.use('/api/v1/cart', authenticateUser, authorizedPermission('admin', 'cashier'), cartRouter);
 
-app.use(notFoundMiddleware);
-app.use(errorHandlerMiddleware);
-
 // const port = process.env.PORT || 3000;
 
 // Remove the app.get('*', ...) and add this instead:
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 let isConnected = false;
 const connect = async () => {
