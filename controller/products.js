@@ -1,7 +1,10 @@
+const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
+
 const Product = require('../models/Products');
 const { productSchema, updateProductSchema, batchesSchema } = require('../config/validator');
 const thresholds = require('../config/threshold');
-const mongoose = require('mongoose');
 const { StatusCodes } = require('http-status-codes');
 const { NotFoundError, BadRequestError } = require('../errors');
 const {
@@ -14,6 +17,7 @@ const {
   productMatchesFilter,
   getEarliestExpirationDate,
   calculateProductCounts,
+  deleteImage,
 } = require('./utils.js');
 
 const getAllProducts = async (req, res) => {
@@ -146,7 +150,6 @@ if (sort) {
   });
 }
 
-
 const getAllProductBatch = async (req, res) => {
   const { filter } = req.query;
   const { id: productId } = req.params;
@@ -219,32 +222,28 @@ const getProductBatch = async (req, res) => {
 }
 
 const createProduct = async (req, res) => {
-  const { error, value } = productSchema.validate(req.body);
+  if (!req.file) {
+    throw new BadRequestError('"Image" is required', "image");
+  }
+  
+  const imagePath = req.file
+    ? `/uploads/products/${req.file.filename}`
+    : null;
+
+  const toValidate = {
+    ...req.body,
+    image: imagePath,
+  }
+  const { error, value } = productSchema.validate(toValidate);
   if (error) {
     throw new BadRequestError(error.details[0].message, error.details[0].path[0]);
-  }
-
-  const validatedBatch = Array.isArray(value.batches) && value.batches.length > 0 
-  ? value.batches[0] 
-  : {};
-
-  // if (['short', 'long', 'isExpiring'].includes(value.consumptionType) && !validatedBatch.expirationDate) {
-  //   throw new BadRequestError(`Expiration Date is required for Consumtion Type: ${value.consumptionType}`);
-  // }
-
-  if (value.consumptionType === 'noExpiry' && validatedBatch.expirationDate) {
-    throw new BadRequestError(`Cannot set Expiration Date for Consumption Type: ${value.consumptionType}'`);
-  }
-
-  if (validatedBatch.quantity <= 0 && validatedBatch.expirationDate) {
-    throw new BadRequestError(`Quantity is required if Expiration Date is present`);
   }
 
   let product = await Product.create(value);
 
   product = processProduct(product.toObject(), thresholds);
 
-  res.status(StatusCodes.CREATED).json({ product, msg: 'Product is added successfully!' });
+  res.status(StatusCodes.CREATED).json({ msg: 'Product is added successfully!' });
 }
 
 const addProductBatch = async (req, res) => {
@@ -263,11 +262,11 @@ const addProductBatch = async (req, res) => {
   const validatedBatch = value.batches[0];
 
   if (['short', 'long', 'isExpiring'].includes(product.consumptionType) && !validatedBatch.expirationDate) {
-    throw new BadRequestError(`Expiration Date is required for Consumtion Type: ${product.consumptionType}`);
+    throw new BadRequestError(`Expiration Date is required`, 'expirationDate');
   }
 
   if (product.consumptionType === 'noExpiry' && validatedBatch.expirationDate) {
-    throw new BadRequestError(`Cannot set Expiration Date for Consumption Type: ${product.consumptionType}`);
+    throw new BadRequestError(`Expiration Date is not allowed`, 'expirationDate');
   }
 
   const existingBatch = product.batches.find(batch => {
@@ -311,6 +310,14 @@ const updateProduct = async (req, res) => {
 
   const mergedData = { ...cleanData, ...removedBatches };
   
+  if (req.file) {
+    const oldImagePath = product.image;
+    mergedData.image = `/uploads/products/${req.file.filename}`;
+
+    if (oldImagePath) {
+      deleteImage(oldImagePath);
+    }
+  }
 
   const { error, value } = updateProductSchema.validate(mergedData);
   if (error) {
@@ -320,7 +327,7 @@ const updateProduct = async (req, res) => {
   Object.assign(product, value);
   await product.save();
 
-  res.status(StatusCodes.OK).json({ product, msg: 'Product is updated successfully' });
+  res.status(StatusCodes.OK).json({ msg: 'Product is updated successfully' });
 }
 
 const updateProductBatch = async (req, res) => {
@@ -363,11 +370,11 @@ const updateProductBatch = async (req, res) => {
   const validatedBatch = value.batches[0];
 
   if (['short', 'long', 'isExpiring'].includes(product.consumptionType) && !validatedBatch.expirationDate) {
-    throw new BadRequestError(`Expiration Date is required for Consumtion Type: ${product.consumptionType}`);
+    throw new BadRequestError(`Expiration Date is required`, 'expirationDate');
   }
 
   if (product.consumptionType === 'noExpiry' && validatedBatch.expirationDate) {
-    throw new BadRequestError(`Cannot set Expiration Date for Consumption Type: ${product.consumptionType}'`);
+    throw new BadRequestError(`Expiration Date is not allowed`, 'expirationDate');
   }
 
   if (product.expirationDate && validatedBatch.quantity < 1) {
@@ -389,6 +396,9 @@ const deleteProduct = async (req, res) => {
   if (!product) {
     throw new NotFoundError(`No product with id ${productId}`);
   }
+
+ deleteImage(product.image);
+
   res.status(StatusCodes.OK).json({ msg: `Product is deleted successfully!` });
 }
 
@@ -408,145 +418,6 @@ const deleteProductBatch = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: `Product is deleted successfully!` });
 }
-
-// const decreaseProductStock = async (req, res) => {
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
-  
-//   try {
-//     const { items, forceOverride = false } = req.body;
-//     const now = new Date();
-
-//     const validationErrors = [];
-    
-//     for (const item of items) {
-//       const product = await Product.findOne({ _id: item.productId }).session(session);
-//       if (!product || !Array.isArray(product.batches)) {
-//         validationErrors.push({
-//           productId: item.productId,
-//           error: 'Product not found'
-//         });
-//         continue;
-//       }
-
-//       const processedProduct = processProduct(product.toObject(), thresholds);
-
-//       const validStock = processedProduct.validStocks;
-//       const expiredStock = processedProduct.expiredStocks;
-
-//       const expiringBatches = processedProduct.batches.filter(batch => batch.expirationStatus === 'expiring-soon');
-//       if (expiringBatches.length > 0) {
-//         validationErrors.push({
-//           productId: processedProduct._id,
-//           productName: processedProduct.name,
-//           error: 'Item Expiring Soon',
-//           expiringSoonBatches: expiringBatches.map(b => ({
-//             batchId: b._id,
-//             quantity: b.quantity,
-//             expirationDate: b.expirationDate
-//           }))
-//         });
-//       }
-
-//       if (!expiredStock && item.quantity > validStock && !forceOverride) {
-//         validationErrors.push({
-//           productId: product._id,
-//           productName: product.name,
-//           error: 'Insufficient Stock',
-//           validStock,
-//           requested: item.quantity
-//         });
-//       }
-
-//       if (expiredStock && item.quantity > validStock && !forceOverride) {
-//         validationErrors.push({
-//           productId: product._id,
-//           productName: product.name,
-//           error: 'Check Expiration Date',
-//           validStock,
-//           requested: item.quantity
-//         });
-//       }
-//     }
-
-//     if (validationErrors.length > 0 && !forceOverride) {
-//       await session.abortTransaction();
-//       return res.status(409).json({
-//         success: false,
-//         msg: 'Some products have insufficient stock',
-//         errors: validationErrors,
-//         requiresForceOverride: true
-//       });
-//     }
-
-//     const processedItems = [];
-    
-//     for (const item of items) {
-//       const product = await Product.findOne({ _id: item.productId }).session(session);
-//       if (!product || !Array.isArray(product.batches)) {
-//         continue;
-//       }
-
-//       const validStock = calculateValidStock(product);
-      
-//       const quantityToProcess = Math.min(item.quantity, validStock);
-
-//       let remainingQty = quantityToProcess;
-
-//       const batches = product.batches
-//         .filter(batch => {
-//           if (!batch.expirationDate) return true;
-//           return new Date(batch.expirationDate) > now;
-//         })
-//         .sort((a, b) => {
-//           if (!a.expirationDate) return 1;
-//           if (!b.expirationDate) return -1;
-//           return new Date(a.expirationDate) - new Date(b.expirationDate);
-//         });
-
-//       for (const batch of batches) {
-//         if (remainingQty <= 0) break;
-
-//         const deduct = Math.min(batch.quantity, remainingQty);
-//         batch.quantity -= deduct;
-//         remainingQty -= deduct;
-//       }
-
-//       product.batches = product.batches.filter(batch => batch.quantity > 0);
-
-//       await product.save({ session });
-
-//       processedItems.push({
-//         productId: product._id,
-//         productName: product.name,
-//         requested: item.quantity,
-//         processed: quantityToProcess - remainingQty,
-//         remainingValidStock: calculateValidStock(product)
-//       });
-//     }
-
-//     await session.commitTransaction();
-
-//     res.status(StatusCodes.OK).json({
-//       success: true,
-//       msg: 'Stock decreased successfully',
-//       processed: processedItems,
-//       errors: forceOverride ? [] : validationErrors
-//     });
-
-//   } catch (error) {
-//     await session.abortTransaction();
-//     console.error('Transaction failed:', error);
-    
-//     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//       success: false,
-//       msg: 'Transaction failed - all changes rolled back',
-//       error: error.message
-//     });
-//   } finally {
-//     session.endSession();
-//   }
-// }
 
 const getProductByBarcode = async (req, res) => {
   const { barcode } = req.query;
@@ -574,6 +445,5 @@ module.exports = {
   updateProductBatch,
   deleteProduct,
   deleteProductBatch,
-  // decreaseProductStock,
   getProductByBarcode,
 }

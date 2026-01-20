@@ -22,6 +22,10 @@ const BatchesSchema = new mongoose.Schema({
 });
 
 const ProductSchema = new mongoose.Schema({
+  image: {
+    type: String,
+    required: [true, 'Please provide image']
+  },
   name: {
     type: String,
     required: [true, 'Please provide name'],
@@ -55,20 +59,10 @@ const ProductSchema = new mongoose.Schema({
     enum: ['long', 'short', 'isExpiring', 'noExpiry'],
   },
   batches: [BatchesSchema],
-  // expirationDate: {
-  //   type: Date,
-  //   default: null,
-  // },
   stock: {
     type: Number,
     default: 0,
-  },
-  // stockStatus: {
-  //   type: String,
-  // },
-  // expirationStatus: {
-  //   type: String,
-  // },
+  }
 }, {
   toJSON: { 
     virtuals: true,

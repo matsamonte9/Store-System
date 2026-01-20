@@ -1,9 +1,6 @@
-// let pausedCart = false;
 import { appState, domElements } from "../../globals.js";
 
-export function fetchProductsFromCart() {
-  // const cartProductListContainer = document.querySelector('.js-cart-row-list-container');
-  
+export function fetchProductsFromCart() {  
   const activeCart = JSON.parse(localStorage.getItem('activeCart') || '[]');
 
   if (activeCart.length === 0) {
@@ -22,7 +19,7 @@ export function fetchProductsFromCart() {
     
     return `
       <div class="cart-row-list" data-product-id="${product.productId}">
-        <img class="product-img-list" src="../chippy.jpg">
+        <img class="product-img-list" src="${product.image}" alt="${product.productName}">
         <div class="product-details">
           ${product.productName}
         </div>

@@ -1,4 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 
 /************************************* CALCULATION FOR ADDED OBJECTS IN PRODUCTS *************************************/
 
@@ -195,6 +197,20 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
+// Delete Image
+
+function deleteImage(filePath) {
+  if (!filePath) return;
+
+  const fullPath = path.join(__dirname, '../uploads/products', path.basename(filePath));
+  if (fs.existsSync(fullPath)) {
+    fs.unlink(fullPath, err => {
+      if (err) console.log('Error deleting product image:', err);
+    });
+  }
+}
+
+
 module.exports = {
   calculateValidStock,
   calculateExpiredStock,
@@ -208,4 +224,5 @@ module.exports = {
   calculateProductCounts,
   generateCartToken,
   validateCartToken,
+  deleteImage,
 }

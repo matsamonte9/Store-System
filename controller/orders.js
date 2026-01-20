@@ -48,7 +48,6 @@ const finalizeOrder = async (req, res) => {
 
   try {
     const { orderId } = req.params;
-    console.log('🔒 [Transaction] Starting for order:', orderId);
 
     const order = await Order.findById(orderId).session(session);
     if (!order) {
@@ -56,11 +55,11 @@ const finalizeOrder = async (req, res) => {
     }
 
     if (order.status === 'completed') {
-      throw new BadRequestError('Order already completed');
+      throw new BadRequestError('Order already completed', "order-status");
     }
 
     if (order.items.length === 0) {
-      throw new BadRequestError('Cannot save an empty order');
+      throw new BadRequestError('Cannot save an empty order', "orders-length");
     }
 
     const orderDataToValidate = {
@@ -80,11 +79,11 @@ const finalizeOrder = async (req, res) => {
       order.status = 'pending';
       await order.save({ session });
       await session.commitTransaction();
-      return res.status(StatusCodes.OK).json({ order });
+      return res.status(StatusCodes.OK).json({ msg: 'Order created succesfully' });
     }
 
     if (order.status !== 'pending') {
-      throw new BadRequestError('Invalid order state');
+      throw new BadRequestError('Invalid order state', 'order-status');
     }
 
     const now = new Date();
@@ -179,12 +178,10 @@ const finalizeOrder = async (req, res) => {
     await session.commitTransaction();
 
     res.status(StatusCodes.OK).json({
-      order,
       msg: 'Order Successfully Added',
     });
   } catch (error) {
     await session.abortTransaction();
-    console.error('🔒 [Transaction] Rolled back due to error:', error.message);
     throw error;
   } finally {
     session.endSession();
@@ -199,7 +196,7 @@ const deleteOrder = async (req, res) => {
     throw new NotFoundError(`No order with id ${orderId}`);
   }
 
-  res.status(StatusCodes.OK).json({ msg: 'Product successfully deleted'});
+  res.status(StatusCodes.OK).json({ msg: 'Order successfully deleted'});
 }
 
 function sanitizeItem(item) {

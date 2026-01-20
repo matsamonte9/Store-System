@@ -1,6 +1,7 @@
 import { successModal, errorModal } from "../shared/modals.js";
 import { appState, domElements } from "../../globals.js";
 import { showProducts } from "./products.js";
+import { imageAction } from "./image-upload.js";
 
 export function setUpModals() {
   addProductModal();
@@ -15,7 +16,7 @@ function addProductModal() {
   const html = `
     <div class="js-modal-overlay modal-overlay">
         <div class="modal-content-container">
-          <div class="modal-content">
+          <div class="add-modal-content">
             <div class="modal-header">
               <div class="modal-title">
                 Add New Product
@@ -26,6 +27,32 @@ function addProductModal() {
             </div>
 
             <div class="modal-body">
+
+            <div class="input-container">
+              <div class="modal-form-title">
+                Image <span class="asterisk"> * </span>
+              </div>
+              <div class="js-image-input-container image-input-container">
+                <span class="material-symbols-outlined image-input-icon">
+                  image_arrow_up
+                </span>
+                <div class="image-input-subtitle">Drop your image here, or</div>
+                <div class="js-click-to-browse input-image-button-container">
+                  <div class="input-image-button">
+                    Click to Browse
+                  </div>
+                  <input class="js-image-input modal-image-input" type="file" hidden>
+                </div>
+                <div class="image-input-reminder">
+                  Max. File Size: 2MB
+                </div>
+              </div>
+              <div class="js-preview-button image-preview hidden">Preview Image</div>
+              
+              <div class="js-error-image modal-form-error">
+                
+              </div>
+            </div>
 
             <div class="input-container">
               <div class="modal-form-title">
@@ -124,31 +151,6 @@ function addProductModal() {
                   </div>
                 </div>
               </div>
-
-              <div class="two-column-form-container">
-                <div class="two-column">
-                  <div class="modal-form-title">
-                    Stock <span class="asterisk"> * </span>
-                  </div>
-                  <div class="input-area">
-                    <input class="js-input-stock modal-input short-input" type="text" placeholder="Stock">
-                  </div>
-                  <div class="js-error-stock modal-form-error">
-                
-                  </div>
-                </div>
-                <div class="two-column">
-                  <div class="modal-form-title">
-                    Expiration Date
-                  </div>
-                  <div class="input-area">
-                    <input class="js-input-expirationDate modal-input date-input" type="date">
-                  </div>
-                  <div class="js-error-expirationDate modal-form-error">
-                
-                  </div>
-                </div>
-              </div>
             </div>
             
             <div class="modal-footer">
@@ -167,6 +169,8 @@ function addProductModal() {
 
   addProductButton.addEventListener('click', () => {
     document.body.insertAdjacentHTML('beforeend', html);
+
+    imageAction();
     
     const overlayDOM = document.querySelector('.js-modal-overlay');
     const closeButton = document.querySelector('.js-modal-close-button');
@@ -181,31 +185,40 @@ function addProductModal() {
     });
 
     addButton.addEventListener('click', async () => {
+      const fileInput = document.querySelector('.js-image-input');
+      const image = fileInput.files[0];
       const name = document.querySelector('.js-input-name').value.trim();
       const barcode = document.querySelector('.js-input-barcode').value.trim();
       const cost = document.querySelector('.js-input-cost').value;
       const price = document.querySelector('.js-input-price').value;
       const category = document.querySelector('.js-input-category').value;
       const consumptionType = document.querySelector('.js-input-consumptionType').value;
-      const quantity = document.querySelector('.js-input-stock').value;
-      const expirationDate = document.querySelector('.js-input-expirationDate').value;
+
+      const formData = new FormData();
+      formData.append("image", image);
+      formData.append("name", name);
+      formData.append("barcode", barcode);
+      formData.append("cost", cost);
+      formData.append("price", price);
+      formData.append("category", category);
+      formData.append("consumptionType", consumptionType);
 
       try {
-        const { data } = await axios.post('/api/v1/products', {
-          name,
-          barcode,
-          cost,
-          price,
-          category,
-          consumptionType,
-          batches: [{
-            quantity,
-            expirationDate
-          }]
-        }, {
-          withCredentials: true
+        const { data } = await axios.post('/api/v1/products', formData, {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
-        showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
+
+        showProducts(
+          appState.currentName, 
+          appState.currentSort, 
+          appState.currentFilter, 
+          appState.currentLimit, 
+          appState.currentPage
+        );
+
         overlayDOM.remove();
         successModal(data.msg);
       } catch (error) {
@@ -249,7 +262,7 @@ function editProductModal() {
           const html = `
             <div class="js-modal-overlay modal-overlay">
                 <div class="modal-content-container">
-                  <div class="modal-content">
+                  <div class="edit-modal-content">
                     <div class="modal-header">
                       <div class="modal-title">
                         Edit Product
@@ -260,6 +273,28 @@ function editProductModal() {
                     </div>
 
                     <div class="modal-body">
+
+                    <div class="input-container">
+                      <div class="modal-form-title">
+                        Image <span class="asterisk"> * </span>
+                      </div>
+                      <div class="js-image-input-container image-input-container">
+                        <span class="material-symbols-outlined image-input-icon">
+                          image_arrow_up
+                        </span>
+                        <div class="image-input-subtitle">Drop your image here, or</div>
+                        <div class="js-click-to-browse input-image-button-container">
+                          <div class="input-image-button">
+                            Click to Browse
+                          </div>
+                          <input class="js-image-input modal-image-input" type="file" hidden>
+                        </div>
+                        <div class="image-input-reminder">
+                          Max. File Size: 2MB
+                        </div>
+                      </div>
+                      <div class="js-preview-button image-preview">Preview Image</div>
+                    </div>
 
                     <div class="input-container">
                       <div class="modal-form-title">
@@ -365,6 +400,7 @@ function editProductModal() {
             `;
           
           document.body.insertAdjacentHTML('beforeend', html);
+          imageAction(product.image);
 
           const overlayDOM = document.querySelector('.js-modal-overlay');
           const closeButton = document.querySelector('.js-modal-close-button');
@@ -377,25 +413,38 @@ function editProductModal() {
           });
 
           saveEditButton.addEventListener('click', async (e) => {
+            const imageInput = document.querySelector('.js-image-input');
+            const image = imageInput.files[0];
             const name = document.querySelector('.js-input-name').value.trim();
             const barcode = document.querySelector('.js-input-barcode').value.trim();
             const cost = document.querySelector('.js-input-cost').value;
             const price = document.querySelector('.js-input-price').value;
             const category = document.querySelector('.js-input-category').value;
             const consumptionType = document.querySelector('.js-input-consumptionType').value;
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('barcode', barcode);
+            formData.append('cost', cost);
+            formData.append('price', price);
+            formData.append('category', category);
+            formData.append('consumptionType', consumptionType);
+            if (image) formData.append('image', image);
             
             try {
-              const { data } = await axios.patch(`/api/v1/products/${productId}`, {
-                name,
-                barcode, 
-                cost,
-                price,
-                category,
-                consumptionType,
-              }, {
-                withCredentials: true
+              const { data } = await axios.patch(`/api/v1/products/${productId}`, formData, {
+                withCredentials: true,
+                headers: { 'Content-Type': 'multipart/form-data' }
               });
-              showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
+
+              showProducts(
+                appState.currentName, 
+                appState.currentSort, 
+                appState.currentFilter, 
+                appState.currentLimit, 
+                appState.currentPage
+              );
+
               overlayDOM.remove();
               successModal(data.msg);
             } catch (error) {
@@ -475,7 +524,15 @@ function deleteProductModal() {
           const response = await axios.delete(`/api/v1/products/${productId}`, {
             withCredentials: true
           });
-          await showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
+
+          await showProducts(
+            appState.currentName, 
+            appState.currentSort, 
+            appState.currentFilter, 
+            appState.currentLimit, 
+            appState.currentPage
+          );
+          
           overlayDOM.remove();
           successModal(response.data.msg);
         } catch (error) {
@@ -503,7 +560,7 @@ function addBatchModal() {
       const html = `
         <div class="js-modal-overlay modal-overlay">
           <div class="modal-content-container">
-            <div class="modal-content">
+            <div class="add-modal-content">
               <div class="modal-header">
                 <div class="modal-title">
                   Add Batch
@@ -547,7 +604,7 @@ function addBatchModal() {
                     <div class="input-area">
                       <input class="js-input-quantity modal-input short-input" type="text" placeholder="Quantity">
                     </div>
-                    <div class="js-error-stock modal-form-error">
+                    <div class="js-error-quantity modal-form-error">
                   
                     </div>
                   </div>
@@ -589,21 +646,54 @@ function addBatchModal() {
     });
 
     addBatchButton.addEventListener('click', async (e) => {
-      const quantity = document.querySelector('.js-input-quantity').value;
-      const expirationDate = document.querySelector('.js-input-expiration-date').value;
+        overlayDOM.querySelectorAll('.modal-form-error')
+          .forEach(err => err.textContent = '');
+      try {
+        const quantity = document.querySelector('.js-input-quantity').value;
+        const expirationDate = document.querySelector('.js-input-expiration-date').value;
 
-      const { data } = await axios.post(`/api/v1/products/${productId}/batch`, {
-        quantity,
-        expirationDate
-      }, {
-        withCredentials: true
-      });
-      showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
-      overlayDOM.remove();
-      successModal(data.msg);
+        const { data } = await axios.post(`/api/v1/products/${productId}/batch`, {
+          quantity,
+          expirationDate
+        }, {
+          withCredentials: true
+        });
+
+        showProducts(
+          appState.currentName, 
+          appState.currentSort, 
+          appState.currentFilter, 
+          appState.currentLimit, 
+          appState.currentPage
+        );
+
+        overlayDOM.remove();
+        successModal(data.msg);
+      } catch (error) {
+        const errmsg = error.response.data.msg;
+        const path = error.response.data.path;
+
+        if (!path) {
+          errorModal(errmsg);
+          return;
+        }
+
+        const field = Array.isArray(path)
+          ? path[path.length - 1]
+          : path;
+
+        const errorDOM = overlayDOM.querySelector(`.js-error-${field}`);
+
+        if (errorDOM) {
+          errorDOM.textContent = errmsg;
+        } else {
+          errorModal(errmsg);
+        }
+      }
     });
     } catch (error) {
-      console.log(error);
+      const errmsg = error.response.data.msg;
+      errorModal(error.response.data.msg);
     }
   });
 }
@@ -626,7 +716,7 @@ domElements.inventoryProductContainerDOM.addEventListener('click', async (e) => 
       const html = `
         <div class="js-modal-overlay modal-overlay">
           <div class="modal-content-container">
-            <div class="modal-content">
+            <div class="edit-modal-content">
               <div class="modal-header">
                 <div class="modal-title">
                   Edit Batch
@@ -670,8 +760,8 @@ domElements.inventoryProductContainerDOM.addEventListener('click', async (e) => 
                     <div class="input-area">
                       <input class="js-input-quantity modal-input short-input" type="text" placeholder="Quantity" value="${batch.quantity}">
                     </div>
-                    <div class="js-error-stock modal-form-error">
-                  
+                    <div class="js-error-quantity modal-form-error">
+
                     </div>
                   </div>
                   <div class="two-column">
@@ -712,21 +802,54 @@ domElements.inventoryProductContainerDOM.addEventListener('click', async (e) => 
     });
 
     editBatchButton.addEventListener('click', async (e) => {
-      const quantity = document.querySelector('.js-input-quantity').value;
-      const expirationDate = document.querySelector('.js-input-expiration-date').value;
+      overlayDOM.querySelectorAll('.modal-form-error')
+        .forEach(err => err.textContent = '');
 
-      const { data } = await axios.patch(`/api/v1/products/${productId}/batch/${batchId}`, {
-        quantity,
-        expirationDate
-      }, {
-        withCredentials: true
-      });
-      showProducts(appState.currentName, appState.currentSort, appState.currentFilter, appState.currentLimit, appState.currentPage);
-      overlayDOM.remove();
-      successModal(data.msg);
+      try {
+        const quantity = document.querySelector('.js-input-quantity').value;
+        const expirationDate = document.querySelector('.js-input-expiration-date').value;
+
+        const { data } = await axios.patch(`/api/v1/products/${productId}/batch/${batchId}`, {
+          quantity,
+          expirationDate
+        }, {
+          withCredentials: true
+        });
+        showProducts(
+          appState.currentName, 
+          appState.currentSort, 
+          appState.currentFilter, 
+          appState.currentLimit, 
+          appState.currentPage
+        );
+
+        overlayDOM.remove();
+        successModal(data.msg);
+      } catch (error) {
+        const errmsg = error.response.data.msg;
+        const path = error.response.data.path;
+
+        if (!path) {
+          errorModal(errmsg);
+          return;
+        }
+
+        const field = Array.isArray(path)
+          ? path[path.length - 1]
+          : path;
+
+        const errorDOM = overlayDOM.querySelector(`.js-error-${field}`);
+
+        if (errorDOM) {
+          errorDOM.textContent = errmsg;
+        } else {
+          errorModal(errmsg);
+        }
+      }
     });
     } catch (error) {
-      console.log(error);
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
     }
   });
 }

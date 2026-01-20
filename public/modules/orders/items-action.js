@@ -1,8 +1,9 @@
 import { appState, domElements } from "../../globals.js";
 import { fetchOrderItems } from "./view-order.js";
 
+import { successModal, errorModal } from "../shared/modals.js";
+
 let isItemsActionOrdersInitialized = false;
-let saveRequestCount = 0; // Track save requests
 
 export function itemsActionOrders() {
   if (isItemsActionOrdersInitialized) {
@@ -54,7 +55,8 @@ export function itemsActionOrders() {
       appState.currentPreviewOrderItems = order.items;
       itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
     } catch (err) {
-      console.log(err);
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
     }
   };
 
@@ -110,7 +112,8 @@ export function itemsActionOrders() {
         appState.currentPreviewOrderItems = order.items;
         itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
       } catch (error) {
-        console.log(error);
+        const errmsg = error.response.data.msg;
+        errorModal(errmsg);
       }
     } else if (deleteItemButton) {
       const productId = deleteItemButton.dataset.productId;
@@ -139,7 +142,8 @@ export function itemsActionOrders() {
         itemsContainer.innerHTML = fetchOrderItems(appState.currentPreviewOrderItems, true);
         console.log(msg);
       } catch (error) {
-        console.log('Delete error:', error);
+        const errmsg = error.response.data.msg;
+        errorModal(errmsg);
       }
     } else {
       return;

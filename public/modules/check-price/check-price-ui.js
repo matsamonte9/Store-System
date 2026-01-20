@@ -3,7 +3,7 @@ export function renderCheckPriceProduct(product) {
 
   const html = `
     <div class="check-price-product-image-container">
-      <img class="check-price-product-image" src="./chippy.jpg">
+      <img class="check-price-product-image" src="${product.image ? product.image : 'chippy.jpg'}" alt="${product.name}">
     </div>
 
     <div class="check-price-product-details">

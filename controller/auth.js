@@ -4,7 +4,6 @@ const { StatusCodes } = require('http-status-codes');
 const { UnauthenticatedError } = require('../errors');
 
 const login = async (req, res) => {
-  console.log(req.body);
   const { email, password } = req.body;
 
   if (!email || !password) {

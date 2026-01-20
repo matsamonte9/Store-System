@@ -295,6 +295,8 @@ body {
 .inventory-row-list-container {
   max-height: none;
   overflow-y: visible;
+
+  scrollbar-width: none;
 }
 
 .table-scroll-wrapper {
@@ -787,6 +789,11 @@ body {
   background-color: white;
 }
 
+.add-modal-content, .edit-modal-content {
+  width: 450px;
+  max-width: 450px;
+}
+
 .modal-header,
 .modal-footer {
   padding: 20px 30px;
@@ -839,6 +846,57 @@ body {
 
 .asterisk {
   color: rgb(225, 0, 0);
+}
+
+.image-input-container {
+  margin-bottom: 5px;
+}
+
+.image-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px dashed rgb(207, 207, 207);
+  border-radius: 10px;
+
+  padding: 20px;
+}
+
+.image-input-icon, .image-input-subtitle {
+  margin-bottom: 10px;
+}
+
+.image-input-icon {
+  color: rgb(104, 103, 103);
+  font-size: 30px !important;
+}
+
+.image-input-subtitle, .image-input-reminder {
+  font-size: 14px;
+  color: rgb(104, 103, 103);
+}
+
+.input-image-button-container {
+  font-size: 14px;
+  font-weight: 500;
+  
+  border: 1px solid rgb(207, 207, 207);
+  border-radius: 8px;
+
+  padding: 10px;
+  cursor: pointer;
+
+  margin-bottom: 10px;
+}
+
+.image-preview {
+  color: #1a73e8;
+  text-decoration: underline; 
+  font-size: 14px;
+
+  cursor: pointer
 }
 
 .input-area,
@@ -1072,6 +1130,12 @@ input[type=date] {
   color: #7b7e8b;
 }
 
+.order-details-and-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .create-order-header-indicator {
   padding: 5px 8px;
 
@@ -1104,6 +1168,30 @@ input[type=date] {
 
 .create-order-details-name-input:focus {
   outline: none;
+}
+
+.warning-icon-container:hover .order-creation-tooltip {
+  opacity: 1;
+}
+
+.order-creation-tooltip {
+  position: absolute;
+  bottom: -30px;
+  right: 0;
+
+  
+
+  background-color: red;
+  color: white;
+  font-size: 14px;
+  white-space: nowrap;
+
+  border-radius: 2px;
+  padding: 4px 8px;
+
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
 }
 
 .create-order-details-service-dropdown {
@@ -1167,6 +1255,15 @@ input.create-order-details-service-button {
 
 .order-product-details-row {
   padding: 10px 15px;
+}
+
+.empty-row-list-order-creation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 50%;
+  font-size: 30px;
 }
 
 .quantity-input {

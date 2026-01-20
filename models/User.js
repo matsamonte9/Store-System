@@ -5,9 +5,9 @@ const jwt = require('jsonwebtoken');
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    minlength: 3,
-    maxlength: 50,
-    required: [true, 'Please Provide Name'],
+    minlength: [3, '"Name" must consist 3 characters'],
+    maxlength: [50, '"Name" must be 50 characters only'],
+    required: [true, '"Name" is required'],
   },
   role: {
     type: String,
@@ -16,14 +16,14 @@ const UserSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Please Provide Email'],
-    match: [/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Please Provide Valid Email'],
+    required: [true, '"Email" is required'],
+    match: [/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, '"Email" is invalid'],
     unique: true,
   },
   password: {
     type: String,
-    required: [true, 'Please Provide Password'],
-    minlength: 6,
+    required: [true, '"Password" is required'],
+    minlength: [6, '"Password" must consist 6 characters'],
   },
 });
 

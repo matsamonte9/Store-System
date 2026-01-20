@@ -1,6 +1,8 @@
 import { appState, domElements } from "../../globals.js";
 import { showProducts } from "./products.js";
-import { closeViewOrder } from "../orders/view-order.js"
+import { closeViewOrder } from "../orders/view-order.js";
+
+import { successModal, errorModal } from "../shared/modals.js";
 
 export function setUpOrderCreation() {
   createOrderHTML();
@@ -73,7 +75,8 @@ async function cancelOrder(createOrderButton, createOrderGrid, createOrderContai
       }
     }
   } catch (error) {
-    console.log(error);
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 }
 
@@ -86,9 +89,14 @@ async function createNewOrder(createOrderButton, createOrderGrid, createOrderCon
     appState.currentOrderId = orderId;
     appState.creatingOrder = true;
 
-    showOrderUI(createOrderButton, createOrderGrid, createOrderContainer, orderId);
+    showOrderUI(
+      createOrderButton, 
+      createOrderGrid, 
+      createOrderContainer, orderId
+    );
   } catch (error) {
-    console.log(error);
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 }
 
@@ -120,8 +128,18 @@ async function showOrderUI(createOrderButton, createOrderGrid, createOrderContai
         <div class="create-order-header-title">
           Order List
         </div>
-        <div class="create-order-header-indicator product-expired-container">
-          Draft
+        <div class="order-details-and-error">
+          <div class="create-order-header-indicator product-expired-container">
+            Draft
+          </div>
+          <div class="js-warning-icon-order-status warning-icon-container hidden">
+            <span class="material-symbols-outlined warning-icon-cart" style="color: #f44336">
+              warning
+            </span>
+            <div class="js-error-order-status order-creation-tooltip">
+              
+            </div>
+          </div>
         </div>
       </div>
       <div class="create-order-details">
@@ -132,26 +150,54 @@ async function showOrderUI(createOrderButton, createOrderGrid, createOrderContai
           <input type="text" class="js-input-supplier-name create-order-details-name-input" 
                  value="${order.supplierName || ''}">
         </div>
-      </div>
-      <div class="create-order-details">
-        <input type="hidden" class="js-order-type" value="${order.orderType || 'personal'}">
-        <div class="js-service-button create-order-details-service-dropdown">
-          <div class="create-order-details-service-button">
-            <div class="js-service-text service-text">
-              Personal
-            </div>
-            <span class="material-symbols-outlined">
-              keyboard_arrow_down
-            </span>
-          </div>
-          <div class="js-service-modal service-modal hidden">
+        <div class="js-warning-icon-supplierName warning-icon-container hidden">
+          <span class="material-symbols-outlined warning-icon-cart" style="color: #f44336">
+            warning
+          </span>
+          <div class="js-error-supplierName order-creation-tooltip">
             
           </div>
         </div>
+      </div>
+      <div class="create-order-details">
+        <div class="order-details-and-error">
+          <input type="hidden" class="js-order-type" value="${order.orderType || 'personal'}">
+          <div class="js-service-button create-order-details-service-dropdown">
+            <div class="create-order-details-service-button">
+              <div class="js-service-text service-text">
+                Personal
+              </div>
+              <span class="material-symbols-outlined">
+                keyboard_arrow_down
+              </span>
+            </div>
+            <div class="js-service-modal service-modal hidden">
+              
+            </div>
+          </div>
+          <div class="js-warning-icon-orderType warning-icon-container hidden">
+            <span class="material-symbols-outlined warning-icon-cart" style="color: #f44336">
+              warning
+            </span>
+            <div class="js-error-orderType order-creation-tooltip">
+              
+            </div>
+          </div>
+        </div>
         
-        <div class="js-service-button create-order-details-service-dropdown">
+        <div class="order-details-and-error">
+          <div class="js-service-button create-order-details-service-dropdown">
           <input type="date" class="js-create-order-delivery-date-input create-order-details-service-button" 
                  value="${order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : ''}">
+          </div>
+          <div class="js-warning-icon-deliveryDate warning-icon-container hidden">
+            <span class="material-symbols-outlined warning-icon-cart" style="color: #f44336">
+              warning
+            </span>
+            <div class="js-error-deliveryDate order-creation-tooltip">
+              
+            </div>
+          </div>
         </div>
       </div>
       <div class="order-product-details-title-container">
@@ -173,6 +219,11 @@ async function showOrderUI(createOrderButton, createOrderGrid, createOrderContai
       <div class="js-order-product-list-container order-products-list-container">
         <!-- Items will be rendered by renderOrderedItems -->
       </div>
+      <div class="js-error-orders-length empty-row-list-order-creation hidden">
+        <div style="color: red">
+          No Item In The Cart
+        </div>
+      </div>
       <div class="create-order-footer-container">
         <div class="js-finalize-order add-button">
           Save Order
@@ -189,9 +240,7 @@ async function showOrderUI(createOrderButton, createOrderGrid, createOrderContai
     deleteItem();
     serviceModal();
     saveOrder();
-  } catch (error) {
-    console.log('Error showing order UI:', error);
-    
+  } catch (error) {  
     if (error.response?.status === 404) {
       appState.creatingOrder = false;
       appState.currentOrderId = null;
@@ -208,7 +257,12 @@ async function showOrderUI(createOrderButton, createOrderGrid, createOrderContai
         </span>
       `;
       createOrderButton.classList.replace('cancel-order-button', 'add-product-button');
+
+      return;
     }
+
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 }
 
@@ -316,6 +370,12 @@ function renderOrderedItems() {
 
   itemListContainer.innerHTML = html;
 
+  const emptyErrorDOM = document.querySelector('.js-error-orders-length');
+
+  if (appState.currentOrderItems.length !== 0) {
+    emptyErrorDOM.classList.add('hidden');
+  }
+
   const quantityInput = itemListContainer.querySelector('.js-quantity-input');
   
   if (quantityInput) {
@@ -348,7 +408,8 @@ function renderOrderedItems() {
           appState.currentOrderItems = order.items;
           renderOrderedItems();
         } catch (error) {
-          console.log(error);
+          const errmsg = error.response.data.msg;
+          errorModal(errmsg);
         }
       }
     });
@@ -436,14 +497,33 @@ function saveOrder() {
       appState.creatingOrder = false;
       appState.currentOrderId = null;
       showProducts(
-      appState.currentName,
-      appState.currentSort,
-      appState.currentFilter,
-      appState.currentLimit,
-      appState.currentPage
-    );
+        appState.currentName,
+        appState.currentSort,
+        appState.currentFilter,
+        appState.currentLimit,
+        appState.currentPage
+      );
+
+      successModal(data.msg);
     } catch (error) {
-      console.log(error);
+      const errmsg = error.response.data.msg;
+      const path = error.response.data.path;
+
+      if (path) {
+        if (path === 'orders-length') {
+          const errorTextDisplay = document.querySelector(`.js-error-${path}`);
+
+          errorTextDisplay.classList.remove('hidden');
+        } else {
+          const warningIcon = document.querySelector(`.js-warning-icon-${path}`);
+          const tooltip = document.querySelector(`.js-error-${path}`);
+
+          warningIcon.classList.remove('hidden');
+          tooltip.textContent = errmsg;
+        }
+      } else {
+        errorModal(errmsg);
+      }
     }
   });
 }
@@ -505,7 +585,8 @@ function saveItem() {
         appState.currentOrderItems = order.items;
         renderOrderedItems();
       } catch (error) {
-        console.log(error);
+        const errmsg = error.response.data.msg;
+        errorModal(errmsg);
       }
     }
   });
@@ -542,9 +623,9 @@ function deleteItem() {
         };
 
         renderOrderedItems();
-        console.log(msg);
       } catch (error) {
-        console.log(error);
+        const errmsg = error.response.data.msg;
+        errorModal(errmsg);
       }
     }
   });
@@ -592,8 +673,9 @@ function addItemToOrder() {
       }
 
       renderOrderedItems();
-      } catch (error) {
-        console.log(error);
-      }
+    } catch (error) {
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
+    }
   });
 }

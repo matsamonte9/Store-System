@@ -1,6 +1,8 @@
 import { fetchProductsFromCart } from "./cart.js";
 import { fetchProductsToReceipt } from "./receipt.js";
 
+import { errorModal } from "../shared/modals.js";
+
 export async function addToCartModal() {
   const addToCartButton = document.querySelector('.js-add-to-cart-button');
 
@@ -49,7 +51,7 @@ export async function addToCartModal() {
         const searchProducts = products.map(product => {
           return `
             <div class="add-to-cart-row-list">
-              <img class="product-img-list" src="./chippy.jpg">
+              <img class="product-img-list" src="${product.image ? product.image : 'chippy.jpg'}" alt="${product.name}">
               <div class="product-details">
                 ${product.name}
               </div>
@@ -66,7 +68,9 @@ export async function addToCartModal() {
 
         cartProductList.innerHTML = searchProducts;
       } catch (error) {
-        console.log(error);
+        document.querySelector('.js-modal-overlay').remove();
+        const errmsg = error.response.data.msg;
+        errorModal(errmsg);
       }
     }
 
@@ -98,7 +102,7 @@ export async function addToCartModal() {
             const { data: { product } } = await axios.get(`/api/v1/products/${productId}`, {
               withCredentials: true
             });
-
+            console.log('Product image from API:', product.image);
             activeCart.push({ 
             productId: product._id,
             productName: product.name,
@@ -108,9 +112,11 @@ export async function addToCartModal() {
             quantity: 1,
             unitDiscount: 0,
             expirationStatus: product.expirationStatus,
+            image: product.image || 'chippy.jpg',
           });
           } catch (error) {
-            console.log(error);
+            const errmsg = error.response.data.msg;
+            errorModal(errmsg);
           }
         }
 
@@ -125,4 +131,40 @@ export async function addToCartModal() {
       document.querySelector('.js-modal-overlay').remove();
     });
   });
+}
+
+export async function addToCartByBarcode(barcode) {
+  try {
+    const { data: { product } } = await axios.get(`/api/v1/products/check-price?barcode=${barcode}`, {
+      withCredentials: true
+    });
+
+    const activeCart = JSON.parse(localStorage.getItem('activeCart') || '[]');
+
+    const existingProduct = activeCart.find(p => p.productId === product._id);
+
+    if (existingProduct) {
+      existingProduct.quantity += 1;
+    } else {
+      activeCart.push({
+        productId: product._id,
+        productName: product.name,
+        expirationDate: product.expirationDate,
+        unitCost: product.cost,
+        unitPrice: product.price,
+        quantity: 1,
+        unitDiscount: 0,
+        expirationStatus: product.expirationStatus,
+        image: product.image || 'chippy.jpg',
+      });
+    }
+
+    localStorage.setItem('activeCart', JSON.stringify(activeCart));
+
+    fetchProductsFromCart();
+    fetchProductsToReceipt();
+  } catch (error) {
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
+  }
 }

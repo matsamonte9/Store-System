@@ -17,15 +17,17 @@ const {
   getProductByBarcode,
 } = require('../controller/products');
 
+const uploadProductImage = require('../controller/upload-product-image');
+
 router.route('/')
   .get(authorizedPermission('admin', 'inventory', 'cashier'), getAllProducts)
-  .post(authorizedPermission('admin', 'inventory'), createProduct);
+  .post(authorizedPermission('admin', 'inventory'), uploadProductImage.single("image"), createProduct);
 
 router.get('/check-price', authorizedPermission('admin', 'inventory', 'cashier'), getProductByBarcode);
   
 router.route('/:id')
   .get(authorizedPermission('admin', 'inventory', 'cashier'), getProduct)
-  .patch(authorizedPermission('admin', 'inventory'), updateProduct)
+  .patch(authorizedPermission('admin', 'inventory'), uploadProductImage.single("image"), updateProduct)
   .delete(authorizedPermission('admin', 'inventory'), deleteProduct);
 
 router.route('/:id/batches', authorizedPermission('admin', 'inventory', 'cashier'))

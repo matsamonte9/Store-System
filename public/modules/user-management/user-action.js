@@ -1,21 +1,14 @@
 import { appState, domElements } from "../../globals.js";
 import { showUsers } from "./users.js";
 
+import { successModal, errorModal } from "../shared/modals.js";
+
 export function handleUserAction() {
   domElements.userListContainerDOM.addEventListener('click', async (e) => {
 
     const deleteButton = e.target.closest('.js-delete-user-button');
     if (deleteButton) {
-      try {
-        const userId = deleteButton.dataset.userId;
-        const { data } = await axios.delete(`/api/v1/user-management/${userId}`, {
-          withCredentials: true,
-        });
-
-        showUsers(appState.userManagementCurrentFilter);
-      } catch (error) {
-        console.log(error);
-      }
+      deleteUserModal(deleteButton);
     }
 
     const editButton = e.target.closest('.js-edit-user-button');
@@ -34,7 +27,7 @@ async function editUserModal(userId, buttonDOM) {
     const html = `
       <div class="js-modal-overlay modal-overlay">
         <div class="modal-content-container">
-          <div class="modal-content">
+          <div class="edit-modal-content">
             <div class="modal-header">
               <div class="modal-title">
                 Edit User
@@ -53,8 +46,8 @@ async function editUserModal(userId, buttonDOM) {
                 <div class="input-area">
                   <input class="js-name-input modal-input" type="text" placeholder="Name" value="${user.name}">
                 </div>
-                <div class="modal-form-error">
-                  
+                <div class="js-error-name modal-form-error">
+                
                 </div>
               </div>
 
@@ -65,8 +58,8 @@ async function editUserModal(userId, buttonDOM) {
                 <div class="input-area">
                   <input class="modal-input" type="text" placeholder="Email" value="${user.email}" disabled>
                 </div>
-                <div class="modal-form-error">
-                  
+                <div class="js-error-email modal-form-error">
+                
                 </div>
               </div>
 
@@ -85,6 +78,9 @@ async function editUserModal(userId, buttonDOM) {
                     Inventory
                   </option>
                 </select>
+                <div class="js-error-role modal-form-error">
+                
+                </div>
               </div>
 
               ${user.role !== 'inventory'
@@ -97,6 +93,9 @@ async function editUserModal(userId, buttonDOM) {
                     <div class="input-area">
                       <input class="js-total-money-input modal-input short-input no-spinner-input" type="number" value="${user.dailyStats.totalMoney}" placeholder="Total Money">
                     </div>
+                    <div class="js-error-totalMoney modal-form-error">
+                
+                    </div>
                   </div>
                   <div class="two-column">
                     <div class="modal-form-title">
@@ -104,6 +103,9 @@ async function editUserModal(userId, buttonDOM) {
                     </div>
                     <div class="input-area">
                       <input class="js-daily-sales-input modal-input short-input no-spinner-input" type="number" value="${user.dailyStats.dailySales}" placeholder="Daily Sales">
+                    </div>
+                    <div class="js-error-dailySales modal-form-error">
+                
                     </div>
                   </div>
                 </div>
@@ -116,6 +118,9 @@ async function editUserModal(userId, buttonDOM) {
                     <div class="input-area">
                       <input class="js-daily-profit-input modal-input short-input no-spinner-input" type="number" value="${user.dailyStats.dailyProfit}" placeholder="Daily Profit">
                     </div>
+                    <div class="js-error-dailyProfit modal-form-error">
+                
+                    </div>
                   </div>
                   <div class="two-column">
                     <div class="modal-form-title">
@@ -123,6 +128,9 @@ async function editUserModal(userId, buttonDOM) {
                     </div>
                     <div class="input-area">
                       <input class="js-transaction-count-input modal-input short-input no-spinner-input" type="number" value="${user.dailyStats.transactionCount}" placeholder="Transaction Count">
+                    </div>
+                    <div class="js-error-transactionCount modal-form-error">
+                
                     </div>
                   </div>
                 </div>
@@ -161,13 +169,18 @@ async function editUserModal(userId, buttonDOM) {
         const roleInput = overlayDOM.querySelector('.js-role-input').value;
 
         let dailyStats = null;
+
         if (roleInput === 'admin' || roleInput === 'cashier') {
-          dailyStats = {
-            totalMoney: Number(overlayDOM.querySelector('.js-total-money-input').value),
-            dailySales: Number(overlayDOM.querySelector('.js-daily-sales-input').value),
-            dailyProfit: Number(overlayDOM.querySelector('.js-daily-profit-input').value),
-            transactionCount: Number(overlayDOM.querySelector('.js-transaction-count-input').value)
-          };
+          const totalMoneyInput = overlayDOM.querySelector('.js-total-money-input');
+  
+          if (totalMoneyInput) {
+            dailyStats = {
+              totalMoney: Number(totalMoneyInput.value),
+              dailySales: Number(overlayDOM.querySelector('.js-daily-sales-input').value),
+              dailyProfit: Number(overlayDOM.querySelector('.js-daily-profit-input').value),
+              transactionCount: Number(overlayDOM.querySelector('.js-transaction-count-input').value)
+            };
+          }
         }
 
         const { data } = await axios.patch(
@@ -180,12 +193,91 @@ async function editUserModal(userId, buttonDOM) {
         buttonDOM.classList.replace('editing-user-icon', 'order-icon');
 
         showUsers(appState.userManagementCurrentFilter);
+
+        successModal(data.msg);
       } catch (error) {
-        console.log(error);
+        document.querySelectorAll('.modal-form-error').forEach(pastError => pastError.textContent = '');
+        const errmsg = error?.response?.data.msg;
+        const path = error.response.data.path;
+
+        if (path) {
+          document.querySelector(`.js-error-${path}`).textContent = errmsg;
+        } else {
+          overlayDOM.remove();
+          errorModal(errmsg);
+          buttonDOM.classList.replace('editing-user-icon', 'order-icon');
+        }
       }
     });
 
   } catch (error) {
-    console.log(error);
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
+}
+
+function deleteUserModal(deleteButton) {
+  const userId = deleteButton.dataset.userId;
+
+  const html = `
+    <div class="js-modal-overlay modal-overlay">
+      <div class="warning-modal-content-container">
+        <div class="modal-content">
+          <div class="modal-header">
+          </div>
+
+          <div class="modal-body">
+            <div class="warning-modal-body">
+              <div class="warning-logo-container logo-container">
+                <img src="./warning-delete-logo.png" class="warning-logo">
+              </div>
+              <div class="warning-title">
+                Delete
+              </div>
+              <div class="warning-subtitle">
+                Are you sure you would like to do this?
+              </div>
+            </div>
+          </div>
+          
+          <div class="warning-modal-footer">
+            <div class="js-cancel-button cancel-button">
+              Cancel
+            </div>
+            <div class="js-confirm-button confirm-button">
+              Confirm
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  const overlayDOM = document.querySelector('.js-modal-overlay');
+  const closeButton = overlayDOM.querySelector('.js-cancel-button');
+  const confirmButton = overlayDOM.querySelector('.js-confirm-button');
+
+  overlayDOM.addEventListener('click', (e) => {
+    if (e.target === overlayDOM || e.target === closeButton) {
+      overlayDOM.remove();
+    }
+  });
+
+  confirmButton.addEventListener('click', async () => {
+    try {
+      const { data } = await axios.delete(`/api/v1/user-management/${userId}`, {
+        withCredentials: true,
+      });
+
+      showUsers(appState.userManagementCurrentFilter);
+
+      overlayDOM.remove();
+      successModal(data.msg);
+    } catch (error) {
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
+    }
+  });
 }

@@ -2,6 +2,8 @@ import { appState, domElements } from "../../globals.js";
 
 import { showUsers } from "./users.js";
 
+import { successModal, errorModal } from "../shared/modals.js";
+
 let userManagementClickHandler = null;
 let createUserClickHandler = null;
 
@@ -29,7 +31,7 @@ function createUserModal() {
   const html = `
     <div class="js-modal-overlay modal-overlay">
       <div class="modal-content-container">
-        <div class="modal-content">
+        <div class="add-modal-content">
           <div class="modal-header">
             <div class="modal-title">
               Create User
@@ -48,7 +50,7 @@ function createUserModal() {
               <div class="input-area">
                 <input class="js-name-input modal-input" type="text" placeholder="ex. Juan Dela Cruz">
               </div>
-              <div class="modal-form-error">
+              <div class="js-error-name modal-form-error">
                 
               </div>
             </div>
@@ -60,7 +62,7 @@ function createUserModal() {
               <div class="input-area">
                 <input class="js-email-input modal-input" type="email" placeholder="juandelacruz@example.com">
               </div>
-              <div class="modal-form-error">
+              <div class="js-error-email modal-form-error">
                 
               </div>
             </div>
@@ -72,7 +74,7 @@ function createUserModal() {
               <div class="input-area">
                 <input class="js-password-input modal-input" type="password" placeholder="*********">
               </div>
-              <div class="modal-form-error">
+              <div class="js-error-password modal-form-error">
                 
               </div>
             </div>
@@ -136,8 +138,19 @@ function createUserModal() {
       overlayDOM.remove();
 
       showUsers(appState.userManagementCurrentFilter);
+
+      successModal(data.msg);
     } catch (error) {
-      console.log(error);
+      document.querySelectorAll('.modal-form-error').forEach(pastError => pastError.textContent = '');
+      const errmsg = error.response.data.msg;
+      const path = error.response.data.path;
+
+      if (path) {
+        document.querySelector(`.js-error-${path}`).textContent = errmsg;
+      } else {
+        overlayDOM.remove();
+        errorModal(errmsg);
+      }
     }
   });
 }

@@ -3,8 +3,6 @@ import { fetchProductsFromCart } from "./cart.js";
 import { fetchProductsToReceipt } from "./receipt.js";
 
 export function actionButtonCart() {
-  // const cartProductListContainer = document.querySelector('.js-cart-row-list-container');
-
   domElements.cartProductListContainer.addEventListener('click', async (e) => {
     const el = e.target;
 

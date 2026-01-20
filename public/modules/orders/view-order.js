@@ -1,5 +1,7 @@
 import { appState, domElements } from "../../globals.js";
 
+import { successModal, errorModal } from "../shared/modals.js";
+
 async function showOrder(orderId, isCompleteButton) {
   try {
     const { data: { order } } = await axios.get(`/api/v1/orders/${orderId}`, {
@@ -91,10 +93,7 @@ async function showOrder(orderId, isCompleteButton) {
     }
 
   } catch (error) {
-    console.log(error);
-
     if (error.response?.status === 404) {
-      console.log('Order not found, closing view panel');
       closeViewOrder();
 
       const viewBtn = document.querySelector(
@@ -104,13 +103,13 @@ async function showOrder(orderId, isCompleteButton) {
         viewBtn.classList.remove('viewing');
       }
     }
+
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 }
 
 export function viewOrder() {
-  // const viewOrderDOM = document.querySelector('.js-view-order'); 
-  // const orderContainerDOM = document.querySelector('.js-order-list-container');
-
   if (appState.currentPreviewOrderId && appState.currentPreviewOrderAction) {
     showOrder(appState.currentPreviewOrderId, appState.currentPreviewOrderAction === 'complete');
   }
@@ -131,12 +130,6 @@ export function viewOrder() {
     );
 
     if (viewButton && viewBtnForOrder.classList.contains('viewing')) {
-      // turnOffPreviousButton();
-      // domElements.viewOrderDOM.innerHTML = '';
-      // domElements.bodyDOM.classList.remove('viewing-order');
-      // domElements.viewOrderDOM.classList.add('hidden');
-      // appState.currentPreviewOrderId = null;
-      // appState.currentPreviewOrderAction = null;
       closeViewOrder();
       return;
     }

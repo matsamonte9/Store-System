@@ -5,6 +5,7 @@ import { renderCheckPricePage } from "./pages/check-price-page.js";
 import { initCartPage } from "./modules/cart/cart-main.js";
 import { initCheckPricePage } from "./modules/check-price/check-price-main.js";
 
+import { addToCartByBarcode } from "./modules/cart/add-to-cart.js";
 import { checkPriceByBarcode } from "./modules/check-price/check-price.js";
 
 let barcodeInput = null;
@@ -129,40 +130,5 @@ function focusBarcode() {
   });
 }
 
-import { fetchProductsFromCart } from "./modules/cart/cart.js";
-import { fetchProductsToReceipt } from "./modules/cart/receipt.js";
 
-async function addToCartByBarcode(barcode) {
-  try {
-    const { data: { product } } = await axios.get(`/api/v1/products/check-price?barcode=${barcode}`, {
-      withCredentials: true
-    });
-
-    const activeCart = JSON.parse(localStorage.getItem('activeCart') || '[]');
-
-    const existingProduct = activeCart.find(p => p.productId === product._id);
-
-    if (existingProduct) {
-      existingProduct.quantity += 1;
-    } else {
-      activeCart.push({
-        productId: product._id,
-        productName: product.name,
-        expirationDate: product.expirationDate,
-        unitCost: product.cost,
-        unitPrice: product.price,
-        quantity: 1,
-        unitDiscount: 0,
-        expirationStatus: product.expirationStatus,
-      });
-    }
-
-    localStorage.setItem('activeCart', JSON.stringify(activeCart));
-
-    fetchProductsFromCart();
-    fetchProductsToReceipt();
-  } catch (error) {
-    console.error("Failed to add product by barcode:", error);
-  }
-}
 

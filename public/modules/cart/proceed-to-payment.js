@@ -2,6 +2,8 @@ import { appState } from "../../globals.js";
 import { fetchProductsFromCart } from "./cart.js";
 import { paymentModal } from "./payment-modal.js";
 
+import { errorModal } from "../shared/modals.js";
+
 export function proceedToPayment() {
   const proceedToPaymentButton = document.querySelector('.js-proceed-to-payment-button');
 
@@ -43,7 +45,8 @@ export function proceedToPayment() {
         return;
       }
 
-      console.error(error);
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
     }
   });
 }

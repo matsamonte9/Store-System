@@ -1,5 +1,7 @@
 import { appState, domElements } from "../../globals.js";
 
+import { successModal, errorModal } from "../shared/modals.js";
+
 export function orderStatusToggle() {
   domElements.navBarDOM.addEventListener('click', async (e) => {
     const el = e.target;
@@ -155,7 +157,8 @@ export async function fetchOrders(status, buttonEl) {
       }
     }
   } catch (error) {
-    console.log(error);
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 }
 

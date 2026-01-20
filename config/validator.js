@@ -11,14 +11,15 @@ const batchSchema = Joi.object({
     .empty(["", null])
     .default(null)
     .label('Expiration Date')
-}).messages({
-  'number.base': '{#label} must be Number',
-  'date.base': '{#label} must be Date',
-  'number.min': '{#label} must be greater than or equal to {#limit}',
-  'number.max': '{#label} must be less than or equal to {#limit}',
-  'any.required': '{#label} is required',
-  'any.custom': '{{#message}}',
-});
+})
+  .messages({
+    'number.base': '{#label} must be Number',
+    'date.base': '{#label} must be Date',
+    'number.min': '{#label} must not be 0',
+    'number.max': '{#label} must be less than or equal to {#limit}',
+    'any.required': '{#label} is required',
+    'any.custom': '{{#message}}',
+  });
 
 const batchesSchema = Joi.object({
   batches: Joi
@@ -30,6 +31,10 @@ const batchesSchema = Joi.object({
 });
 
 const productSchema = Joi.object({
+  image: Joi
+    .string()
+    .required()
+    .label('Label'),
   name: Joi
     .string()
     .trim()
@@ -57,7 +62,7 @@ const productSchema = Joi.object({
       const obj = helpers.state.ancestors[0];
 
       if (value < obj.cost) {
-        return helpers.error('any.custom', { message: 'Price must be higher than cost'});
+        return helpers.error('any.custom', { message: '"Price" is lower than cost'});
       }
       return value;
     }),
@@ -82,32 +87,11 @@ const productSchema = Joi.object({
           : ['isExpiring', 'noExpiry'];
 
       if (!allowed.includes(value)) {
-        return helpers.error('any.custom', { message: `Invalid Consumption Type for ${obj.category}` });
+        return helpers.error('any.custom', { message: `Invalid Consumption Type` });
       }
 
       return value;
     }),
-    batches: Joi.array().items(Joi.object({
-      quantity: Joi
-        .number()
-        .min(1)
-        .empty(["", null])
-        .label('Quantity'),
-      expirationDate: Joi
-        .date()
-        .empty(["", null])
-        .default(null)
-        .label('Expiration Date')
-      }).default([])
-      .label('Batches')
-      .messages({
-        'number.base': '{#label} must be Number',
-        'date.base': '{#label} must be Date',
-        'number.min': '{#label} must be greater than or equal to {#limit}',
-        'number.max': '{#label} must be less than or equal to {#limit}',
-        'any.required': '{#label} is required',
-        'any.custom': '{{#message}}',
-    })),
   stock: Joi.forbidden(),
   stockStatus: Joi.forbidden(),
   expirationStatus: Joi.forbidden(),
@@ -115,17 +99,16 @@ const productSchema = Joi.object({
   'string.base': '{#label} must be String',
   'number.base': '{#label} must be Number',
   'date.base': '{#label} must be Date',
-  'string.min': '{#label} length must be at least {#limit} characters long',
-  'string.max': '{#label} length must be less than or equal to {#limit} characters long',
-  'number.min': '{#label} must be greater than or equal to {#limit}',
-  'number.max': '{#label} must be less than or equal to {#limit}',
+  'string.min': '{#label} must be {#limit} characters',
+  'string.max': '{#label} must be less than {#limit} characters',
+  'number.min': '{#label} must be greater {#limit}',
+  'number.max': '{#label} must be less than {#limit}',
   'any.required': '{#label} is required',
-  'any.only': '{#label} must be one of {#valids}',
+  'any.only': '{#label} is invalid',
   'any.custom': '{{#message}}',
 });
 
 const updateProductSchema = productSchema
-  .fork(['name', 'barcode', 'cost', 'price', 'category', 'consumptionType'], field => field.optional())
-  // .fork(['batches', 'stock', 'stockStatus', 'expirationStatus'], field => field.forbidden());
+  .fork(['name', 'barcode', 'cost', 'price', 'category', 'consumptionType'], field => field.optional());
 
 module.exports = { productSchema, updateProductSchema, batchesSchema };

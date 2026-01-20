@@ -2,6 +2,8 @@ import { appState } from "../../globals.js";
 import { fetchProductsFromCart } from "./cart.js";
 import { fetchProductsToReceipt } from "./receipt.js";
 
+import { errorModal } from "../shared/modals.js";
+
 export function paymentModal(totalAmount) {
   const html = `
     <div class="js-modal-overlay modal-overlay">
@@ -109,12 +111,13 @@ export function paymentModal(totalAmount) {
           check_circle
         </span>
       `;
-      // overlayDOM.remove();
     } catch (error) {
       completeButton.disabled = false;
       completeButton.textContent = 'Complete Transaction';
       appState.cartToken = null;
-      console.log(error);
+      
+      const errmsg = error.response.data.msg;
+      errorModal(errmsg);
     }
   });
 }

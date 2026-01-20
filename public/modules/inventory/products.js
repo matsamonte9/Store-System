@@ -1,18 +1,6 @@
 import { appState, domElements } from "../../globals.js";
 
-// const productContainerDOM = document.querySelector('.js-inventory-row-list-container');
-// const totalProductDOM = document.querySelector('.js-total-products-count');
-// const lowStockDOM = document.querySelector('.js-low-stock-count');
-// const outOfStockDOM = document.querySelector('.js-out-of-stock-count');
-// const nearExpirationDOM = document.querySelector('.js-near-expiration-count');
-// const expiredDOM = document.querySelector('.js-expired-count');
-// const paginationDOM = document.querySelector('.js-pagination');
-
-// const totalItemsCountDOM = document.querySelector('.js-total-items-count');
-// const totalItemsFetchDOM = document.querySelector('.js-total-items-fetch');
-// const limitDropupCountDOM = document.querySelector('.js-limit-dropup');
-
-// let creatingOrder = false;
+import { errorModal } from "../shared/modals.js";
 
 export const showProducts = async (nameValue = '', sortValue = '', filterValue = '', limitValue = '', pageValue = '') => {
   try {
@@ -36,20 +24,16 @@ export const showProducts = async (nameValue = '', sortValue = '', filterValue =
     const allProducts = products.map(product => {
       const { 
         _id: productId, 
+        image,
         name, 
         barcode, 
         cost, 
         price, 
         validStocks, 
         expiredStocks, 
-        expirationDate, 
         stockStatus, 
-        expirationStatus, 
-        batches } = product;
-
-      const dateOnly = expirationDate
-      ? expirationDate.split('T')[0]
-      : '';
+        batches 
+      } = product;
 
       let stockClass = stockStatus === 'out-of-stock'
       ? 'product-out-of-stock-container'
@@ -57,17 +41,9 @@ export const showProducts = async (nameValue = '', sortValue = '', filterValue =
       ? 'product-low-stock-container'
       : 'product-high-stock-container'
 
-      let expirationClass = expirationStatus === 'expired'
-      ? 'product-expired-container'
-      : expirationStatus === 'expiring-soon'
-      ? 'product-expiring-container'
-      : expirationStatus === 'fresh'
-      ? 'product-good-container'
-      : ''
-
       return `
       <div class="js-inventory-row-list inventory-row-list">
-        <img class="product-img-list" src="chippy.jpg">
+        <img class="product-img-list" src="${image ? image : 'chippy.jpg'}" alt="${name}">
         <div class="product-details product-details-label">
           ${name}
         </div>
@@ -127,7 +103,8 @@ export const showProducts = async (nameValue = '', sortValue = '', filterValue =
 
     renderPagination(totalPagesCount);
   } catch (error) {
-    console.log(error);
+    const errmsg = error.response.data.msg;
+    errorModal(errmsg);
   }
 } 
 

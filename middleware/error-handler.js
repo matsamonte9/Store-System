@@ -14,7 +14,12 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
   if (err.name === 'ValidationError') {
     customError.statusCode = StatusCodes.BAD_REQUEST;
-    customError.msg = Object.values(err.errors).map(item => item.message).join(', ');
+
+    const firstErrorKey = Object.keys(err.errors)[0];
+    const firstError = err.errors[firstErrorKey];
+
+    customError.msg = firstError.message;
+    customError.path = firstError.path;
   }
 
   if (err.code && err.code === 11000) {
@@ -23,7 +28,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     // customError.path = 'barcode';
   }
   // return res.status(customError.statusCode).json({err});
-  console.log({err});
+  // console.log({err});
   return res.status(customError.statusCode).json({ msg: customError.msg, path: customError.path });
 }
 

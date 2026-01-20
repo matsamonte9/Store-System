@@ -74,11 +74,28 @@ const createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   if (!name || !email || !password || !role) {
-    throw new BadRequestError('Please provide all required fields');
+    let errorName;
+    let path;
+
+    if (!name) {
+      path = 'name';
+      errorName = `"Name"`;
+    } else if (!email) {
+      path = 'email';
+      errorName = `"Email"`;
+    } else if (!password) {
+      path = 'password';
+      errorName = `"Password"`;
+    } else if (!role) {
+      path = 'role';
+      errorName = `"Role"`;
+    } 
+
+    throw new BadRequestError(`${errorName} is required`, path);
   }
 
   if (!['cashier', 'inventory', 'admin'].includes(role)) {
-    throw new BadRequestError('Invalid role');
+    throw new BadRequestError('"Role" is invalid', 'role');
   } 
 
   await User.create({
@@ -115,7 +132,7 @@ const updateUser = async (req, res) => {
 
     if (role !== undefined) {
       if (!["admin", "cashier", "inventory"].includes(role)) {
-        throw new BadRequestError('Invalid Role');
+        throw new BadRequestError('Invalid Role', 'role');
       }
       userDoc.role = role;
     }
@@ -133,51 +150,78 @@ const updateUser = async (req, res) => {
         { session }
       );
     }
-
-    if (dailyStats && ['admin', 'cashier'].includes(userDoc.role)) {
-      const { totalMoney, dailySales, dailyProfit, transactionCount } = dailyStats;
-
-      if (
-        totalMoney < 0 || dailySales < 0 || dailyProfit < 0 || transactionCount < 0
-      ) {
-        throw new BadRequestError('DailyStats values cannot be negative');
+    
+    if (dailyStats) {
+      if (previousRole === 'inventory') {
+        throw new BadRequestError(`Not allowed to send stats`);
       }
-      if (dailyProfit > dailySales) {
-        throw new BadRequestError('Daily Profit cannot exceed Daily Sales');
-      }
-      if (dailySales > totalMoney) {
-        throw new BadRequestError('Daily Sales cannot exceed Total Money');
-      }
+      
+      if (dailyStats && ['admin', 'cashier'].includes(userDoc.role)) {
+        const { totalMoney, dailySales, dailyProfit, transactionCount } = dailyStats;
 
-      if (dailyProfit && transactionCount < 1) {
-        throw new BadRequestError("Transaction Count Can't be 0")
-      }
+        if (
+          totalMoney < 0 || dailySales < 0 || dailyProfit < 0 || transactionCount < 0
+        ) {
+          let errorName;
+          let path;
+          if (totalMoney < 0) {
+            path = 'totalMoney';
+            errorName = '"Total Money"';
+          } else if (dailySales < 0){
+            path = 'dailySales';
+            errorName = '"Daily Sales"';
+          } else if (dailyProfit < 0) {
+            path = 'dailyProfit';
+            errorName = '"Daily Profit"';
+          } else if (transactionCount < 0) {
+            path = 'transactionCount';
+            errorName = '"Transaction Count"';
+          }
 
-      let stats = await DailyStats.findOne({
-        date: today,
-        user: userDoc._id
-      }).session(session);
+          throw new BadRequestError(`${errorName} values can't be negative`, path);
+        }
 
-      if (!stats) {
-        stats = await DailyStats.create([{
+        if (dailyProfit > dailySales) {
+          throw new BadRequestError(`"Daily Profit" can't exceed Daily Sales`, 'dailyProfit');
+        }
+        if (dailySales > totalMoney) {
+          throw new BadRequestError(`"Daily Sales" can't exceed Total Money`, 'dailySales');
+        }
+
+        if (dailyProfit && transactionCount < 1) {
+          throw new BadRequestError(`"Transaction Count" can't be 0`, 'transactionCount')
+        }
+
+        if ((dailyProfit === 0 || dailySales === 0) && transactionCount > 0) {
+          throw new BadRequestError(`"Transaction Count" is not needed`, 'transactionCount');
+        }
+
+        let stats = await DailyStats.findOne({
           date: today,
-          user: userDoc._id,
-          totalMoney: totalMoney,
-          dailySales: dailySales,
-          dailyProfit: dailyProfit,
-          transactionCount: transactionCount,
-        }], { session });
-      } else {
-        const statsUpdate = {};
-        ['totalMoney', 'dailySales', 'dailyProfit', 'transactionCount']
-          .forEach(key => {
-            if (dailyStats[key] !== undefined) {
-              statsUpdate[key] = dailyStats[key];
-            }
-          });
+          user: userDoc._id
+        }).session(session);
 
-        Object.assign(stats, statsUpdate);
-        await stats.save({ session });
+        if (!stats) {
+          stats = await DailyStats.create([{
+            date: today,
+            user: userDoc._id,
+            totalMoney: totalMoney,
+            dailySales: dailySales,
+            dailyProfit: dailyProfit,
+            transactionCount: transactionCount,
+          }], { session });
+        } else {
+          const statsUpdate = {};
+          ['totalMoney', 'dailySales', 'dailyProfit', 'transactionCount']
+            .forEach(key => {
+              if (dailyStats[key] !== undefined) {
+                statsUpdate[key] = dailyStats[key];
+              }
+            });
+
+          Object.assign(stats, statsUpdate);
+          await stats.save({ session });
+        }
       }
     }
 
