@@ -10,6 +10,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 
 const app = express();
+const serverless = require('serverless-http');
 
 // router
 const authRouter = require('./routes/auth');
@@ -43,12 +44,22 @@ app.use(errorHandlerMiddleware);
 // const port = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-      res.send('Server is alive!');
-    });
+  res.send('Server is alive!');
+});
 
-    connectDB(process.env.MONGO_URI)
-  .then(() => console.log('Connected to DB'))
-  .catch(err => console.log('DB connection error:', err));
+let isConnected = false;
+const connect = async () => {
+  if (!isConnected) {
+    await connectDB(process.env.MONGO_URI);
+    console.log('Connected to DB');
+    isConnected = true;
+  }
+};
+connect().catch(err => console.log('DB connection error:', err));
+
+// Export for Vercel
+module.exports = app;
+module.exports.handler = serverless(app);
 
 // const start = async () => {
 //   try {
