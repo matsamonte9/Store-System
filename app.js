@@ -43,7 +43,8 @@ app.use(errorHandlerMiddleware);
 
 // const port = process.env.PORT || 3000;
 
-app.get('*', (req, res) => {
+// Remove the app.get('*', ...) and add this instead:
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
